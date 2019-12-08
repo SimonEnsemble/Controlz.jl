@@ -34,5 +34,5 @@ function Base.show(io::IO, tf::TransferFunction)
     for i = 1:nb_slack
         print(io, " ")
     end
-    println(io, bottom)
+    print(io, bottom)
 end
