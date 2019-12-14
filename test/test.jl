@@ -47,7 +47,13 @@ const s = TransferFunction([1, 0], [1])
     @test isapprox(g * s ^ 0, g)
     @test_throws MethodError s ^ -1
 
-
+    ###
+    #  time delay
+    ###
+    g = exp(-4.0*s)
+    @test g.time_delay == 4.0
+    g = 1 / (s + 1) * exp(-6.2 * s)
+    @test isapprox(g, TransferFunction([1], [1, 1], 6.2))
     
     ###
     # zeros, poles, gain
@@ -106,4 +112,49 @@ end
     @test isapprox(A, [0.0 1.0; -2.0 -3.0])
     @test isapprox(B, [0.0, 1.0])
     @test isapprox(C, [3.0 1.0])
+    
+    # first order step response
+    K = 4.3
+    τ = 2.8
+    g = K / (τ * s + 1)
+    t, y = simulate(g, unit_step, (0.0, 12.0))
+    y_truth = K * (1.0 .- exp.(-t ./ τ))
+    @test isapprox(y_truth, y, rtol=0.0001)
+
+    # first order ramp input
+    a = 2.0 # slope of ramp
+    t, y = simulate(g, t -> (t < 0.0) ? 0.0 : a * t, (0.0, 10.0))
+    y_truth = K * a * t .+ K * a * τ * (exp.(- t ./ τ) .- 1.0)
+    @test isapprox(y_truth, y, rtol=0.0001)
+
+    # first order sinusoidal input
+    ω = 2.0
+    A = 4.5
+    t, y = simulate(g, t -> (t < 0.0) ? 0.0 : A * sin(ω * t), (0.0, 10.0))
+    ϕ=atan(-τ*ω)
+    y_truth = τ * ω / (1 + (τ*ω)^2) * exp.(-t ./ τ) .+ 1 / sqrt(1+(τ*ω)^2) * sin.(ω*t .+ ϕ)
+    y_truth *= K * A
+    @test isapprox(y_truth, y, rtol=0.001)
+
+    # FOPTD
+    M = 3.3
+    θ = 2.3
+    τ = 0.7
+    g = K / (τ * s + 1) * exp(-θ * s)
+    t, y = simulate(g, t -> (t < 0.0) ? 0.0 : M, (0.0, 10.0))
+    y_truth = K * M * (1.0 .- exp.(-(t .- θ) ./ τ))
+    y_truth[t .< θ] .= 0.0
+    @test isapprox(y_truth, y, rtol=0.001)
+
+    # second order, response to step, overdamped
+    K = 4.3
+    τ = 2.8
+    ξ = 1.2
+    g = K / (τ ^ 2 * s ^ 2 + 2 * τ * ξ * s+ 1)
+    M = 3.3
+    t, y = simulate(g, t -> (t < 0.0) ? 0.0 : M, (0.0, 20.0))
+    y_truth = 1.0 .- exp.(- ξ / τ * t) .* (
+    ξ / sqrt(ξ^2 - 1) * sinh.(sqrt.(ξ^2 - 1) / τ * t) .+ cosh.(sqrt.(ξ^2 - 1) / τ * t))
+    y_truth *= K * M
+    @test isapprox(y_truth, y, rtol=0.001)
 end

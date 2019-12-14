@@ -1,4 +1,4 @@
-import Base.*, Base./, Base.+, Base.-, Base.==, Base.^, Base.isapprox
+import Base.*, Base./, Base.+, Base.-, Base.==, Base.^, Base.exp, Base.isapprox
 
 @doc raw"""
     tf = TransferFunction([1, 2], [3, 5, 8])
@@ -54,6 +54,21 @@ function ^(tf::TransferFunction, x::Int)
         end
         return tfp
     end
+end
+
+"""
+    tf_time_delay = exp(- 3 * s)
+
+Conveniently create a time delay by exp(- θ * s).
+
+# Example
+julia> g = 1 / (s + 1) * exp(-2.0 * s) # introduce time delay of 2.0
+"""
+function exp(tf::TransferFunction)
+    if ! ((degree(tf.numerator) == 1) && (degree(tf.denominator) == 0) && (tf.time_delay == 0.0))
+        error("this only works with exp(-3.0 * s) for example, to introduce time delays")
+    end
+    return TransferFunction([1.0], [1.0], -tf.numerator[1])
 end
 
 function +(tf1::TransferFunction, tf2::TransferFunction)
