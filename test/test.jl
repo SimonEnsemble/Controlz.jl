@@ -36,6 +36,18 @@ const s = TransferFunction([1, 0], [1])
     @test isapprox(5 / (s+3), TransferFunction([5], [1, 3]))
     @test isapprox(33 / (2*s+3), TransferFunction([33], [2, 3]))
     @test isapprox((s+3) / ((s - 2) * (2*s-3)), TransferFunction([1, 3], [2, -7, 6]))
+
+    ###
+    #  power
+    ###
+    @test isapprox(s ^ 2, s * s)
+    @test isapprox(s ^ 4, s * s * s * s)
+    @test isapprox(s ^ 1, s)
+    g = TransferFunction([2], [3, 4])
+    @test isapprox(g * s ^ 0, g)
+    @test_throws MethodError s ^ -1
+
+
     
     ###
     # zeros, poles, gain
@@ -78,4 +90,20 @@ const s = TransferFunction([1, 0], [1])
     tf = (3 * s * s) / (2 * s + 1)
     @test ! proper(tf)
     @test ! strictly_proper(tf)
+end
+
+@testset "testing Simulation" begin
+    # from http://web.mit.edu/2.14/www/Handouts/StateSpace.pdf
+    tf = (13*s+26) / (1*s*s*s+7*s*s+19*s+13)
+    A, B, C = Controlz.tf_to_ss(tf)
+    @test isapprox(A, [0.0 1.0 0.0; 0  0 1; -13 -19 -7])
+    @test isapprox(B, [0.0, 0.0, 1.0])
+    @test isapprox(C, [26.0 13.0 0.0])
+    
+    # from https://www.engr.mun.ca/~millan/Eng6825/canonicals.pdf
+    tf = TransferFunction([1, 3], [1, 3, 2])
+    A, B, C = Controlz.tf_to_ss(tf)
+    @test isapprox(A, [0.0 1.0; -2.0 -3.0])
+    @test isapprox(B, [0.0, 1.0])
+    @test isapprox(C, [3.0 1.0])
 end

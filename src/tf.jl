@@ -1,4 +1,4 @@
-import Base.*, Base./, Base.+, Base.-, Base.==, Base.isapprox
+import Base.*, Base./, Base.+, Base.-, Base.==, Base.^, Base.isapprox
 
 @doc raw"""
     tf = TransferFunction([1, 2], [3, 5, 8])
@@ -43,6 +43,18 @@ TransferFunction(num::ArrayOfReals, den::ArrayOfReals, td::Float64) =
 
 *(k::Number, tf::TransferFunction) = TransferFunction(k * tf.numerator, tf.denominator, tf.time_delay)
 *(tf::TransferFunction, k::Number) = *(k, tf)
+function ^(tf::TransferFunction, x::Int)
+    # x< 0 case handled by MethodError
+    if x == 0
+        return TransferFunction([1], [1])
+    else
+        tfp = tf
+        for i = 2:x
+            tfp = tfp * tf
+        end
+        return tfp
+    end
+end
 
 function +(tf1::TransferFunction, tf2::TransferFunction)
     if (tf1.time_delay != tf2.time_delay)
