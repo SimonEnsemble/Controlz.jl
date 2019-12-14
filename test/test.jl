@@ -65,4 +65,17 @@ const s = TransferFunction([1, 0], [1])
     z, p, k = zeros_poles_gain(g)
     evaluate(g, 0.0) == k
     evaluate(g, 1.0) == 1/3
+
+    ###
+    #  properness
+    ###
+    tf = 1 / (2 * s + 1)
+    @test proper(tf)
+    @test strictly_proper(tf)
+    tf = 3 * s / (2 * s + 1)
+    @test proper(tf)
+    @test ! strictly_proper(tf)
+    tf = (3 * s * s) / (2 * s + 1)
+    @test ! proper(tf)
+    @test ! strictly_proper(tf)
 end

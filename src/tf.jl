@@ -154,3 +154,19 @@ julia> evaluate(tf, 2.0 + 3.0im) # also takes imaginary numbers as input
 function evaluate(tf::TransferFunction, z::Number)
     return polyval(tf.numerator, z) / polyval(tf.denominator, z) * exp(-tf.time_delay * z)
 end
+
+"""
+    proper(tf)
+
+Return `true` if transfer function `tf` is proper and `false` otherwise.
+"""
+proper(tf::TransferFunction) = degree(tf.numerator) <= degree(tf.denominator)
+
+"""
+    strictly_proper(tf)
+
+Return `true` if transfer function `tf` is strictly proper and `false` otherwise.
+"""
+strictly_proper(tf::TransferFunction) = degree(tf.numerator) < degree(tf.denominator)
+
+const s = TransferFunction([1, 0], [1])
