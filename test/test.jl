@@ -112,7 +112,20 @@ end
     @test isapprox(A, [0.0 1.0; -2.0 -3.0])
     @test isapprox(B, [0.0, 1.0])
     @test isapprox(C, [3.0 1.0])
+
+    # from https://people.kth.se/~demirel/State_Space_Representation_of_Transfer_Function_Systems.pdf
+    tf = TransferFunction([1], [1, 6, 11, 6])
+    A, B, C = Controlz.tf_to_ss(tf)
+    @test isapprox(A, [0.0 1.0 0.0; 0.0 0.0 1.0; -6.0 -11.0 -6.0])
+    @test isapprox(B, [0.0, 0.0, 1.0])
+    @test isapprox(C, [1.0 0.0 0.0])
     
+    tf = TransferFunction([1, 3, 3], [1, 2, 1])
+    A, B, C = Controlz.tf_to_ss(tf)
+    @test isapprox(A, [0.0 1.0; -1.0 -2.0])
+    @test isapprox(B, [0.0, 1.0])
+    @test isapprox(C, [2.0 1.0])
+
     # first order step response
     K = 4.3
     τ = 2.8
@@ -120,11 +133,22 @@ end
     t, y = simulate(g, unit_step, (0.0, 12.0))
     y_truth = K * (1.0 .- exp.(-t ./ τ))
     @test isapprox(y_truth, y, rtol=0.0001)
+    Y = g / s # invert Y(s) way
+    t, y = simulate(Y, (0.0, 12.0))
+    @test isapprox(y_truth, y, rtol=0.0001)
+
+    # first order impulse response
+    t, y = simulate(g, (0.0, 12.0))
+    y_truth = K / τ * exp.(-t/τ)
+    @test isapprox(y_truth, y, rtol=0.0001)
 
     # first order ramp input
     a = 2.0 # slope of ramp
     t, y = simulate(g, t -> (t < 0.0) ? 0.0 : a * t, (0.0, 10.0))
     y_truth = K * a * t .+ K * a * τ * (exp.(- t ./ τ) .- 1.0)
+    @test isapprox(y_truth, y, rtol=0.0001)
+    Y = g * a / s^2
+    t, y = simulate(Y, (0.0, 10.0))
     @test isapprox(y_truth, y, rtol=0.0001)
 
     # first order sinusoidal input
@@ -134,6 +158,9 @@ end
     ϕ=atan(-τ*ω)
     y_truth = τ * ω / (1 + (τ*ω)^2) * exp.(-t ./ τ) .+ 1 / sqrt(1+(τ*ω)^2) * sin.(ω*t .+ ϕ)
     y_truth *= K * A
+    @test isapprox(y_truth, y, rtol=0.001)
+    Y = g * A * ω / (s^2 + ω^2)
+    t, y = simulate(Y, (0.0, 10.0))
     @test isapprox(y_truth, y, rtol=0.001)
 
     # FOPTD
@@ -146,15 +173,50 @@ end
     y_truth[t .< θ] .= 0.0
     @test isapprox(y_truth, y, rtol=0.001)
 
-    # second order, response to step, overdamped
+    ##
+    # second order, overdamped
     K = 4.3
     τ = 2.8
     ξ = 1.2
-    g = K / (τ ^ 2 * s ^ 2 + 2 * τ * ξ * s+ 1)
+    g = K / (τ ^ 2 * s ^ 2 + 2 * τ * ξ * s + 1)
+    # response to step
     M = 3.3
     t, y = simulate(g, t -> (t < 0.0) ? 0.0 : M, (0.0, 20.0))
     y_truth = 1.0 .- exp.(- ξ / τ * t) .* (
     ξ / sqrt(ξ^2 - 1) * sinh.(sqrt.(ξ^2 - 1) / τ * t) .+ cosh.(sqrt.(ξ^2 - 1) / τ * t))
     y_truth *= K * M
+    @test isapprox(y_truth, y, rtol=0.001)
+    Y = g * M / s # invert Y(s) way
+    t, y = simulate(Y, (0.0, 20.0))
+    @test isapprox(y_truth, y, rtol=0.001)
+    # response to impulse
+    t, y = simulate(g, (0.0, 20.0))
+    y_truth = K / τ / sqrt(ξ^2-1) * exp.(-ξ/τ*t) .* sinh.(sqrt(ξ^2-1)/τ*t)
+    @test isapprox(y_truth, y, rtol=0.001)
+
+    ##
+    # second order, underdamped
+    K = 4.3
+    τ = 2.8
+    ξ = 0.2
+    g = K / (τ ^ 2 * s ^ 2 + 2 * τ * ξ * s + 1)
+    # impulse response
+    t, y = simulate(g, (0.0, 20.0))
+    y_truth = K / τ / sqrt(1-ξ^2) * exp.(-ξ/τ*t) .* sin.(sqrt(1-ξ^2)/τ*t)
+    @test isapprox(y_truth, y, rtol=0.001)
+
+    ##
+    # second order with zeros
+    K = 32.0
+    τₐ = 2.3
+    τ₁ = 1.1
+    τ₂ = 2.5
+    g = K * (τₐ * s + 1) / (τ₁ * s + 1) / (τ₂ * s + 1)
+    # step response
+    t, y = simulate(g, unit_step, (0.0, 10.0)) # with explicit input as a function of time
+    y_truth = 1 .- (τ₁ - τₐ) / (τ₁ - τ₂) * exp.(-t/τ₁) .- (τ₂ - τₐ) / (τ₂ - τ₁) * exp.(-t/τ₂)
+    y_truth *= K
+    @test isapprox(y_truth, y, rtol=0.001)
+    t, y = simulate(g / s, (0.0, 10.0)) # direct inversion
     @test isapprox(y_truth, y, rtol=0.001)
 end

@@ -8,7 +8,9 @@ http://web.mit.edu/2.14/www/Handouts/StateSpace.pdf
  G(s) = ----- = -------------------------
          U(s)    aₙ sⁿ + ... + a₁s + a₀
 
-then we can formulate the tf G(s) as a state space ODE:
+then we can formulate the system described by transfer
+function G(s) as a state space representation known
+as the controllable canonical form:
 
  dx
 ---- = A * x(t) + B * u(t)
@@ -16,8 +18,7 @@ then we can formulate the tf G(s) as a state space ODE:
 
 y(t) = C * x(t) + bₙ/aₙ * u(t)
 
-we compute A, B, C here.
-
+we compute the matrices A, B, C here.
 """
 function tf_to_ss(tf::TransferFunction)
     @assert proper(tf) "tf not proper!"
@@ -49,12 +50,19 @@ end
 
 
 """
-    t, y = simulate(tf, u, tspan, nb_time_points=100)
+    t, y = simulate(tf, u, tspan, nb_time_points=100) # explicit input function u(t)
+    t, y = simulate(Y, tspan, nb_time_points=100) # invert Y(s)
 
-Simulate LTI system described by transfer function `tf` with input function `u` (a function of time).
+Simulate the output y(t) of an LTI system. `simulate` handles two scenarios:
+1. we have the transfer function `tf` that characterizes how the LTI system responds to inputs and
+an input function `u`, an explicit function of time.
+2. we have the Laplace transform of the output, `Y(s)`.
 
 # Arguments
+julia> t, y = simulate(tf, u, tspan, nb_time_points=100)
+julia> t, y = simulate(Y, tspan, nb_time_points=100)
 * `tf::TransferFunction`: the transfer function describing the relationship between input `u` and output `y`
+* `Y::TransferFunction`: the Laplace transform of the output y(t)
 * `u::Function`: the input function u(t)
 * `tspan::Tuple{Float64, Float64}`: the time span over which to simulate the LTI system.
 * `nb_time_points::Int=100`: the number of time points at which to save the solution y(t)
@@ -65,15 +73,19 @@ Simulate LTI system described by transfer function `tf` with input function `u` 
 
 # Example
 
+## given transfer function `tf` and input function `u`
+
+One can simulate the first order step response as:
 julia> tf = 4 / (3 * s + 1)
+julia> u(t) = (t < 0.0) ? 0.0 : 1.0
+julia> t, y = simulate(tf, u, (0.0, 12.0))
 
-one can use anonymous functions as the input:
+## given Laplace transform of the output, `Y`
 
-julia> t, y = simulate(tf, t -> (t < 0.0) ? 0.0 : 1.0, (0.0, 12.0)) # unit step response
-
-or explicit functions:
-julia> a_step_input(t) = (t < 0.0) ? 0.0 : 1.0
-julia> t, y = simulate(tf, a_step_input, (0.0, 12.0)) # unit step response
+One can also simulate the first order step response as:
+julia> tf = 4 / (3 * s + 1)
+julia> Y = tf / s
+julia> t, y = simulate(Y, (0.0, 12.0))
 """
 function simulate(tf::TransferFunction, u::Function, tspan::Tuple{Float64, Float64};
         nb_time_points::Int=100)
@@ -98,7 +110,42 @@ function simulate(tf::TransferFunction, u::Function, tspan::Tuple{Float64, Float
     t = range(tspan[1], stop=tspan[2], length=nb_time_points)
     y = [NaN for i = 1:nb_time_points]
     for (i, t_i) in enumerate(t)
-        y[i] = (C * sol(t_i))[1] + b_i(n) / a_i(n) * u(t_i - tf.time_delay)
+        if t_i < 0.0
+            y[i] = 0.0
+        else
+            y[i] = (C * sol(t_i))[1] + b_i(n) / a_i(n) * u(t_i - tf.time_delay)
+        end
     end
-    return t, y
+    return collect(t), y
+end
+
+function simulate(Y::TransferFunction, tspan::Tuple{Float64, Float64}; nb_time_points::Int=100)
+    if ! proper(Y)
+        error("transfer function not proper...")
+    end
+
+    a_i(i::Int) = Y.denominator[i]
+    b_i(i::Int) = Y.numerator[i]
+    n = degree(Y.denominator)
+
+    # convert tf to state space form
+    A, B, C = tf_to_ss(Y)
+
+    x0 = deepcopy(B) # initial condition
+
+    f(x, p, t) = A * x # RHS of ODE (ignore p for params)
+    prob = ODEProblem(f, x0, tspan)
+    # pass time delay as discontinuity to avoid spurious shift in result
+    sol = solve(prob, d_discontinuities=[Y.time_delay])
+
+    t = range(tspan[1], stop=tspan[2], length=nb_time_points)
+    y = [NaN for i = 1:nb_time_points]
+    for (i, t_i) in enumerate(t)
+        if t_i < 0.0
+            y[i] = 0.0
+        else
+            y[i] = (C * sol(t_i))[1]
+        end
+    end
+    return collect(t), y
 end
