@@ -15,6 +15,15 @@ const s = TransferFunction([1, 0], [1])
     @test tf.time_delay == 3.2
     @test tf.numerator == Poly([1], :s)
     @test tf.denominator == Poly([2, 3], :s) # reverse order
+
+    ###
+    #  isapprox
+    ###
+    g1 = 4 * s / (2 * s + 1)
+    g2 = 8 * s / (4 * s + 2)
+    @test isapprox(g1, g2)
+    g2 = 8 * s / (4 * s + 2) * exp(-0.01*s)
+    @test ! isapprox(g1, g2)
     
     ###
     # multiply
@@ -86,10 +95,20 @@ const s = TransferFunction([1, 0], [1])
     ###
     #  evaluate
     ###
-    g = TransferFunction([1], [3, 1])
+    g = TransferFunction([1], [3, 1]) # 1 / (3s+1)
     z, p, k = zeros_poles_gain(g)
-    evaluate(g, 0.0) == k
-    evaluate(g, 1.0) == 1/3
+    @test evaluate(g, 0.0) == k
+    @test evaluate(g, 1.0) == 1/4
+    @test evaluate(g, 0.0) == 1.0
+    # https://www.mathworks.com/help/control/ref/evalfr.html
+    g = (s - 1) / (s ^ 2 + s + 1)
+    z, p, k = zeros_poles_gain(g)
+    @test k == -1
+    @test evaluate(g, 0.0) == k
+    @test isapprox(evaluate(g, 1+im), 0.2308 + 0.1538im, atol=0.0001)
+    g = 1.0 / (s^2 + 2*s + 1)
+    @test isapprox(evaluate(g, 0.1*im), 0.9705 - 0.1961im, atol=0.0001)
+    
 
     ###
     #  properness
