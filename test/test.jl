@@ -27,6 +27,11 @@ const s = TransferFunction([1, 0], [1])
     @test isapprox(g1 * g2, TransferFunction([2], [8, 6, 1], 6.0))
     g = TransferFunction([2], [3, 4])
     @test isapprox(5 * g, TransferFunction([10], [3, 4]))
+
+    ###
+    #   subtract
+    ###
+    @test isapprox(-s, -1.0 * s)
     
     ###
     #  divide
@@ -54,6 +59,8 @@ const s = TransferFunction([1, 0], [1])
     @test g.time_delay == 4.0
     g = 1 / (s + 1) * exp(-6.2 * s)
     @test isapprox(g, TransferFunction([1], [1, 1], 6.2))
+    @test isapprox(exp(-3*s), exp(-3.0*s))
+    @test isapprox(exp(-s), TransferFunction([1], [1], 1.0))
     
     ###
     # zeros, poles, gain

@@ -7,12 +7,27 @@ function poly_to_string(poly::Poly)
     return String(take!(io))
 end
 
+function show_time_delay(io::IO, time_delay::Union{Int, Float64})
+    if time_delay != 0.0
+        print(io, " e^($(-time_delay)*s)")
+    end
+end
+
 function Base.show(io::IO, tf::TransferFunction)
     top = poly_to_string(tf.numerator)
     bottom = poly_to_string(tf.denominator)
     
-    nb_dashes = maximum([length(top), length(bottom)])
+    # is this a rational polynomial? then just print the numerator / constant
+    if degree(tf.denominator) == 0
+        # normalized numerator
+        p = tf.numerator / tf.denominator[0]
+        print(io, poly_to_string(p))
+        show_time_delay(io, tf.time_delay)
+        return nothing
+    end
     
+    nb_dashes = maximum([length(top), length(bottom)])
+
     # print numerator
     nb_slack = floor(Int, (nb_dashes - length(top)) / 2) # for centering
     for i = 1:nb_slack
@@ -24,15 +39,14 @@ function Base.show(io::IO, tf::TransferFunction)
     for _ = 1:nb_dashes
         print(io, "-")
     end
-    if tf.time_delay != 0.0
-        print(io, " e^(-$(tf.time_delay)*s)")
-    end
+    show_time_delay(io, tf.time_delay)
     print(io, "\n")
-    
+
     # print denominator
     nb_slack = floor(Int, (nb_dashes - length(bottom)) / 2) # for centering
     for i = 1:nb_slack
         print(io, " ")
     end
     print(io, bottom)
+    return nothing
 end

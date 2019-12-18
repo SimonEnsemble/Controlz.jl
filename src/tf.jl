@@ -25,7 +25,7 @@ julia> tf = TransferFunction([4], [2, 1], 2.2)
 struct TransferFunction
     numerator::Poly
     denominator::Poly
-    time_delay::Float64
+    time_delay::Union{Float64, Int}
 end
 
 ArrayOfReals = Union{Array{Float64, 1}, Array{Int64, 1}}
@@ -33,7 +33,7 @@ ArrayOfReals = Union{Array{Float64, 1}, Array{Int64, 1}}
 TransferFunction(num::ArrayOfReals, den::ArrayOfReals) = 
     TransferFunction(Poly(reverse(num), :s), Poly(reverse(den), :s), 0.0)
 
-TransferFunction(num::ArrayOfReals, den::ArrayOfReals, td::Float64) = 
+TransferFunction(num::ArrayOfReals, den::ArrayOfReals, td::Union{Float64, Int}) = 
     TransferFunction(Poly(reverse(num), :s), Poly(reverse(den), :s), td)
 
 *(tf1::TransferFunction, tf2::TransferFunction) =
@@ -84,6 +84,7 @@ end
 +(x::Number, tf::TransferFunction) = +(tf, x)
 -(tf::TransferFunction, x::Number) = +(tf, -x)
 -(x::Number, tf::TransferFunction) = +(-1 * tf, x)
+-(tf::TransferFunction) = -1.0 * tf
 
 /(tf1::TransferFunction, tf2::TransferFunction) =
    TransferFunction(tf1.numerator * tf2.denominator,
