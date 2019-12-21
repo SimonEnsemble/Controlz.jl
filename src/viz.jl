@@ -1,7 +1,9 @@
 using LaTeXStrings
 using PyPlot
+
 # hipster plot theme
-PyPlot.matplotlib.style.use("hipster.mplstyle")
+PyPlot.matplotlib.style.use(joinpath(
+    replace(pathof(Controlz), "src/Controlz.jl" => "src"), "hipster.mplstyle"))
 
 function draw_axes()
     axvline(x=0, color="0.7", lw=2, zorder=1)
