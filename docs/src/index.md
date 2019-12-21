@@ -2,7 +2,8 @@
 
 `Controlz.jl` is a [Julia](https://julialang.org/) package to explore concepts in the simulation of process dynamics and control of linear, time-invariant (LTI) systems using transfer function representations.
 
-For example, consider an LTI system characterized by a transfer function $g(s) = 4 / (3s+1)$.
+For example, consider an LTI system characterized by the transfer function:
+$$g(s) = 4 / (3s+1)$$.
 
 ```julia
 julia> using Controlz
@@ -19,3 +20,9 @@ julia> viz_response(t, y, title="SO underdamped step response")
 ```
 
 ![](example_response.png)
+
+# install in Julia
+
+* in the Julia REPL: go into package mode by typing `]`. Then `add Controlz#master`. Then `Backspace` to exit package mode.
+* in Jupyter Notebook or Julia: `using Pkg; Pkg.add("Controlz#master")`.
+

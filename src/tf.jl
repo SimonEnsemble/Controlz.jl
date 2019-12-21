@@ -10,7 +10,7 @@ Construct a transfer function representing a linear, time-invariant system.
 construct the transfer function:
 
 ```math
-$G(s) = \frac{4e^{-2.2s}}{2s+1}$
+G(s) = \frac{4e^{-2.2s}}{2s+1}
 ```
 
 ```
@@ -121,7 +121,7 @@ _poles(tf::TransferFunction) = roots(tf.denominator)
 _gain(tf::TransferFunction) = polyval(tf.numerator, 0.0) / polyval(tf.denominator, 0.0)
 
 """
-    z, p, k = zeros_poles_gain(tf) # compute zeros, poles, gain for a `TransferFunction`
+    z, p, k = zeros_poles_gain(tf) # compute the zeros, poles, gain of a `TransferFunction`
 
 Compute the zeros, poles, and gain of a transfer function. 
 
@@ -130,8 +130,10 @@ Compute the zeros, poles, and gain of a transfer function.
 * the poles are computed as the zeros of the denominator of the transfer function.
 
 # Example
+```
 julia> tf = TransferFunction([1], [4, 1])
 julia> z, p, k = zeros_poles_gain(tf) # ([], [-0.25], 1)
+```
 
 ---
 
@@ -140,7 +142,9 @@ julia> z, p, k = zeros_poles_gain(tf) # ([], [-0.25], 1)
 Construct a `TransferFunction` by passing an array of the zeros, array of the poles, and a gain.
 
 # Example
+```
 julia> tf = zeros_poles_gain([], [-0.25], 1) # 1 / (s + 0.25)
+```
 """
 zeros_poles_gain(tf::TransferFunction) = _zeros(tf), _poles(tf), _gain(tf)
 
@@ -175,9 +179,11 @@ end
 Evaluate a `TransferFunction`, `tf`, at a particular number `z`.
 
 # Examples
+```
 julia> tf = TransferFunction([1], [3, 1])
 julia> evaluate(tf, 1.0) # 0.25
 julia> evaluate(tf, 2.0 + 3.0im) # also takes imaginary numbers as input
+```
 """
 function evaluate(tf::TransferFunction, z::Number)
     return polyval(tf.numerator, z) / polyval(tf.denominator, z) * exp(-tf.time_delay * z)

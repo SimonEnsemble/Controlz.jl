@@ -49,43 +49,44 @@ function tf_to_ss(tf::TransferFunction)
 end
 
 
-"""
+@doc raw"""
     t, y = simulate(tf, u, tspan, nb_time_points=100) # explicit input function u(t)
     t, y = simulate(Y, tspan, nb_time_points=100) # invert Y(s)
 
-Simulate the output y(t) of an LTI system. `simulate` handles two scenarios:
-1. we have the transfer function `tf` that characterizes how the LTI system responds to inputs and
-an input function `u`, an explicit function of time.
-2. we have the Laplace transform of the output, `Y(s)`.
+Simulate the output $y(t)$ of an LTI system. `simulate` handles two scenarios:
+1. we have the transfer function `tf` that characterizes how the LTI system responds to inputs and an input function `u`, an explicit function of time $u(t)$.
+2. we have the Laplace transform of the output, $Y(s)$, `Y`.
 
 # Arguments
-julia> t, y = simulate(tf, u, tspan, nb_time_points=100)
-julia> t, y = simulate(Y, tspan, nb_time_points=100)
 * `tf::TransferFunction`: the transfer function describing the relationship between input `u` and output `y`
-* `Y::TransferFunction`: the Laplace transform of the output y(t)
+* `Y::TransferFunction`: the Laplace transform of the output $y(t)$. Usually formed by $g(s)U(s)$, where $U(s)$ is the Laplace transform of the input.
 * `u::Function`: the input function u(t)
 * `tspan::Tuple{Float64, Float64}`: the time span over which to simulate the LTI system.
-* `nb_time_points::Int=100`: the number of time points at which to save the solution y(t)
+* `nb_time_points::Int=100`: the number of time points at which to save the solution $y(t)$
 
 # Returns
-* `t::Array{Float64, 1}`: array of times at which solution was saved
-* `y::Array{Float64, 1}`: array of y values at corresponding times in `t`
+* `t::Array{Float64, 1}`: array of times $t$ at which the solution was saved
+* `y::Array{Float64, 1}`: array of $y$ values at corresponding times in `t`
 
 # Example
 
-## given transfer function `tf` and input function `u`
+1. given transfer function `tf` and input function `u`
 
 One can simulate the first order step response as:
+```
 julia> tf = 4 / (3 * s + 1)
 julia> u(t) = (t < 0.0) ? 0.0 : 1.0
 julia> t, y = simulate(tf, u, (0.0, 12.0))
+```
 
-## given Laplace transform of the output, `Y`
+2. given Laplace transform of the output, `Y`
 
 One can also simulate the first order step response as:
+```
 julia> tf = 4 / (3 * s + 1)
 julia> Y = tf / s
 julia> t, y = simulate(Y, (0.0, 12.0))
+```
 """
 function simulate(tf::TransferFunction, u::Function, tspan::Tuple{Float64, Float64};
         nb_time_points::Int=100)
