@@ -6,16 +6,13 @@ os:
 julia:
     - 1.3
 
-jobs:
-  include:
-    - stage: "Documentation"
-      julia: 1.1
-      os: linux
-      script:
-        - julia --color=yes --project=docs/ -e 'using Pkg; Pkg.add("Documenter"); Pkg.instantiate()'
-        - julia --color=yes --project=docs/ docs/make.jl
-      after_success: skip
-
 notifications:
     email: true
+
+script:
+  - julia --project --check-bounds=yes -e 'import Pkg; Pkg.build(); Pkg.test("Controlz")'
+
+after_success:
+    - julia --project -e 'import Pkg; Pkg.add("Documenter")'
+    - julia --project ./docs/make.jl
 
