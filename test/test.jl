@@ -122,6 +122,12 @@ const s = TransferFunction([1, 0], [1])
     tf = (3 * s * s) / (2 * s + 1)
     @test ! proper(tf)
     @test ! strictly_proper(tf)
+
+    ###
+    #  characteristic eqn.
+    ###
+    g_ol = 4 / (s + 3) / (s + 2) / (s + 1)
+    @test characteristic_polynomial(g_ol) == Poly([10.0, 11, 6, 1], :s)
 end
 
 @testset "testing Simulation" begin
