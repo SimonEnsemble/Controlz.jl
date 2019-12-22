@@ -71,12 +71,12 @@ julia> zeros_poles_k(g) # [-1/5], [-2+im, 2+im], 5
 
 ## transfer function algebra
 
-we can add `+`, subject `-`, mutiply `*`, and divide `/` transfer functions.
+we can add `+`, subject `-`, multiply `*`, and divide `/` transfer functions.
 
 ```julia
 g1 = 3 / (s + 2)
 g2 = 1 / (s + 4)
-g = g1 * g2
+g = g1 * g2 # 3 / (s^2 + 6s + 8)
 ```
 
 ## evaluate a transfer function at a complex number
@@ -107,6 +107,15 @@ z, p, gain = zeros_poles_gain(g)
 # z = [-1.0]
 # p = [-2-im, -2+im]
 # gain  = 1.0
+```
+
+## cancel poles and zeros
+
+we can cancel pairs of identical poles and zeros in a transfer function.
+
+```
+julia> g = s * (s+1) / ((s+3) * s * (s+1) ^ 2)
+julia> pole_zero_cancellation(g) # 1 / ((s+3) * (s+1))
 ```
 
 ```@docs

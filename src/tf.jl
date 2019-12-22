@@ -256,6 +256,10 @@ function pole_zero_cancellation(tf::TransferFunction; verbose::Bool=false)
     if verbose && sum(canceled_poles) != 0
         println("canceling the following poles and zeros: ", ps[canceled_poles])
     end
+    
+    # allow some tolerance in root finding
+    @assert maximum(abs.(imag.(zs))) < 1e-6
+    @assert maximum(abs.(imag.(ps))) < 1e-6
 
-    return zeros_poles_k(zs[.! canceled_zeros], ps[.! canceled_poles], k, time_delay=tf.time_delay)
+    return zeros_poles_k(real.(zs[.! canceled_zeros]), real.(ps[.! canceled_poles]), k, time_delay=tf.time_delay)
 end

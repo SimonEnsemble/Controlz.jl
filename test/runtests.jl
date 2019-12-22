@@ -187,6 +187,8 @@ const s = TransferFunction([1, 0], [1])
     @test isapprox(pole_zero_cancellation(s^5/s), s^4)
     @test isapprox(pole_zero_cancellation(s^5*(s-1)/s/(s-1)), s^4)
     @test isapprox(pole_zero_cancellation(s^5*(s-1)/s/(s-1)*(s+2)), (s+2)*s^4)
+    g = s * (s+1) / ((s+3) * s * (s+1) ^ 2)
+    @test isapprox(pole_zero_cancellation(g), 1 / ((s+3) * (s+1)))
 
     ###
     #  characteristic eqn.
