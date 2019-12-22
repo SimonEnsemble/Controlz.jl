@@ -22,6 +22,7 @@ function viz_response(t::Array{Float64}, y::Array{Float64};
     ylabel(plot_ylabel)
     title(plot_title)
     draw_axes()
+    tight_layout()
     return nothing
 end
 
@@ -36,6 +37,7 @@ function viz_poles_and_zeros(tf::TransferFunction)
     xlabel("Re")
     ylabel("Im")
     title("poles and zeros")
+    tight_layout()
     return nothing
 end
 
@@ -50,6 +52,7 @@ function viz_nyquist_diagram(tf::TransferFunction; nb_pts::Int=200)
     xlabel("Re[G(iω)]")
     ylabel("Im[G(iω)]")
     title("Nyquist diagram")
+    tight_layout()
     return nothing
 end
 
@@ -79,5 +82,6 @@ function viz_root_locus(g_ol::TransferFunction)
     ylabel("Im"),
     draw_axes()
     title("root locus")
+    tight_layout()
     return nothing
 end
