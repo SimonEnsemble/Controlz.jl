@@ -36,6 +36,8 @@ TransferFunction(num::ArrayOfReals, den::ArrayOfReals) =
 TransferFunction(num::ArrayOfReals, den::ArrayOfReals, td::Union{Float64, Int}) = 
     TransferFunction(Poly(reverse(num), :s), Poly(reverse(den), :s), td)
 
+const s = TransferFunction([1, 0], [1])
+
 *(tf1::TransferFunction, tf2::TransferFunction) =
     TransferFunction(tf1.numerator * tf2.numerator,
                      tf1.denominator * tf2.denominator,
@@ -65,8 +67,12 @@ Conveniently create a time delay by exp(- θ * s).
 julia> g = 1 / (s + 1) * exp(-2.0 * s) # introduce time delay of 2.0
 """
 function exp(tf::TransferFunction)
+    # if numerator is zero, then the value is 1.0 and no time delay is introduced
+    if degree(tf.numerator) == -1
+        return TransferFunction([1], [1])
+    end
     if ! ((degree(tf.numerator) == 1) && (degree(tf.denominator) == 0) && (tf.time_delay == 0.0))
-        error("this only works with exp(-3.0 * s) for example, to introduce time delays")
+        error("exp only functions with exp(-3.0 * s) for example, to introduce time delays")
     end
     return TransferFunction([1.0], [1.0], -tf.numerator[1])
 end
@@ -85,6 +91,7 @@ end
 -(tf::TransferFunction, x::Number) = +(tf, -x)
 -(x::Number, tf::TransferFunction) = +(-1 * tf, x)
 -(tf::TransferFunction) = -1.0 * tf
+-(tf1::TransferFunction, tf2::TransferFunction) = +(tf1, -1*tf2)
 
 /(tf1::TransferFunction, tf2::TransferFunction) =
    TransferFunction(tf1.numerator * tf2.denominator,
@@ -96,21 +103,29 @@ end
 # note: must have polynomails written in same form
 ==(tf1::TransferFunction, tf2::TransferFunction) = (tf1.numerator == tf2.numerator) && (tf1.denominator == tf2.denominator) && (tf1.time_delay == tf2.time_delay)
 
-# make sure we have a +1 in the denominator
-function _standardize(tf::TransferFunction)
-    # multiply by one in a fancy way.
-    constant_in_denominator = tf.denominator.a[1]
-    # divide by numerator and denominator in this
+@doc raw"""
+    tf = zpk_form(tf)
+
+write transfer function in zeros, poles, k-factor form:
+
+$$g(s)=k\dfrac{\Pi_j (s-z_j}{\Pi_j (s-p_j}$$
+where $z_j$ is zero $j$, $p_j$ is pole $j$, and $k$ is a constant factor (not equal to the zero-frequency gain) that uniquely specifies the transfer function.
+
+this is achieved by multiplying by 1.0 in a fancy way such that the highest power of s in the denominator has a coefficient of 1.
+"""
+function zpk_form(tf::TransferFunction)
+    coeff_highest_power_denom = tf.denominator[end]
 
     return TransferFunction(
-        tf.numerator / constant_in_denominator,
-        tf.denominator / constant_in_denominator,
+        tf.numerator / coeff_highest_power_denom,
+        tf.denominator / coeff_highest_power_denom,
         tf.time_delay)
 end
 
 function isapprox(tf1::TransferFunction, tf2::TransferFunction)
-    tf1s = _standardize(tf1)
-    tf2s = _standardize(tf2)
+    # to directly compare numerators and denominators, put in zpk form
+    tf1s = zpk_form(tf1)
+    tf2s = zpk_form(tf2)
     return isapprox(tf1s.time_delay, tf2s.time_delay) && isapprox(tf1s.numerator, tf2s.numerator) && isapprox(tf1s.denominator, tf2s.denominator)
 end
 
@@ -118,60 +133,57 @@ _zeros(tf::TransferFunction) = roots(tf.numerator)
 
 _poles(tf::TransferFunction) = roots(tf.denominator)
 
-_gain(tf::TransferFunction) = polyval(tf.numerator, 0.0) / polyval(tf.denominator, 0.0)
+_k(tf::TransferFunction) = tf.numerator[end] / tf.denominator[end]
 
+@doc raw"""
+    K = zero_frequency_gain(tf)
+
+Compute the (signed) zero frequency gain of a transfer function $g(s)$, which is the value of the transfer function at $s=0$.
+"It represents the ratio of the steady state value of the output with respect to a step input" [source](http://www.cds.caltech.edu/~murray/books/AM05/pdf/am06-xferfcns_16Sep06.pdf)
+
+# Arguments
+* `tf::TransferFunction`: the transfer function
 """
-    z, p, k = zeros_poles_gain(tf) # compute the zeros, poles, gain of a `TransferFunction`
+zero_frequency_gain(tf::TransferFunction) = evaluate(tf, 0.0)
 
-Compute the zeros, poles, and gain of a transfer function. 
+@doc raw"""
+    # compute the zeros, poles, and k-factor of a transfer function
+    z, p, k = zeros_poles_k(tf)
+    # construct a transfer function from its zeros, poles, and k-factor
+    tf = zeros_poles_k(z, p, k, time_delay=0.0)
 
-* the gain is computed by evaluating the transfer function G(s) at s = 0.
-* the zeros are computed as the zeros of the numerator of the transfer function.
-* the poles are computed as the zeros of the denominator of the transfer function.
+the representation of a transfer function in this context is:
 
-# Example
-```
-julia> tf = TransferFunction([1], [4, 1])
-julia> z, p, k = zeros_poles_gain(tf) # ([], [-0.25], 1)
-```
+$$g(s)=k\dfrac{\Pi_j (s-z_j)}{\Pi_j (s-p_j)}$$
+where $z_j$ is zero $j$, $p_j$ is pole $j$, and $k$ is a constant factor (not equal to the zero-frequency gain) that uniquely specifies the transfer function.
 
----
-
-    tf = zeros_poles_gain(z, p, k, time_delay=0.0) # construct a `TransferFunction` with given zeros, poles, and gain.
-
-Construct a `TransferFunction` by passing an array of the zeros, array of the poles, and a gain.
-
-# Example
-```
-julia> tf = zeros_poles_gain([], [-0.25], 1) # 1 / (s + 0.25)
-```
+* the zeros are the zeros of the numerator of the transfer function.
+* the poles are the zeros of the denominator of the transfer function.
 """
-zeros_poles_gain(tf::TransferFunction) = _zeros(tf), _poles(tf), _gain(tf)
+zeros_poles_k(tf::TransferFunction) = _zeros(tf), _poles(tf), _k(tf)
 
 # docstring above. this overloaded function is for *constructing* tfs
-function zeros_poles_gain(zeros::Array, poles::Array, gain::Union{Float64, Int};
-                          time_delay::Union{Int64, Float64}=0.0)
-    s = Poly([0, 1], :s)
-
+function zeros_poles_k(zeros::Array, poles::Array, k::Union{Float64, Int};
+                       time_delay::Union{Int64, Float64}=0)
     # construct numerator polynomial 
-    num = Poly([1], :s)
-    for z in zeros
-        num *= (s - z)
-    end
+    num = length(zeros) == 0 ? Poly(1.0, :s) : poly(zeros, :s) # poly is from Polynomails.jl
     
     # construct denominator polynomial
-    den = Poly([1], :s)
-    for p in poles
-        den *= (s - p)
-    end
-
-    # account for gain
-    #  ... gain is not necessary 1.0 at this point...
-    current_gain = _gain(TransferFunction(num, den, 0.0))
-    num *= gain / current_gain
-
-    return TransferFunction(num, den, time_delay)
+    den = length(poles) == 0 ? Poly(1.0, :s) : poly(poles, :s)
+    
+    return TransferFunction(k * num, den, time_delay)
 end
+
+@doc raw"""
+    z, p, gain = zeros_poles_gain(tf)
+
+Compute the zeros, poles, and zero-frequency gain of a transfer function.
+
+* the zeros are the zeros of the numerator of the transfer function.
+* the poles are the zeros of the denominator of the transfer function.
+* the zero-frequency gain is the transfer function evaluated at $s=0$
+"""
+zeros_poles_gain(tf::TransferFunction) = _zeros(tf), _poles(tf), zero_frequency_gain(tf)
 
 """
     evaluate(tf, z)
@@ -203,4 +215,47 @@ Return `true` if transfer function `tf` is strictly proper and `false` otherwise
 """
 strictly_proper(tf::TransferFunction) = degree(tf.numerator) < degree(tf.denominator)
 
-const s = TransferFunction([1, 0], [1])
+
+"""
+    tf = pole_zero_cancellation(tf, verbose=false)
+
+Find pairs of identical poles and zeros and return a new transfer function with the appropriate poles and zeros cancelled. 
+This is achieved by comparing the poles and zeros with `isapprox`.
+
+# Arguments
+* `tf::TransferFunction`: the transfer function
+* `verbose::Bool=false`: print off which poles, zeros are cancelled.
+
+# Example
+```
+julia> tf = s * (s - 1) / (s * (s + 1))
+julia> pole_zero_cancellation(tf) # (s-1)/(s+1)
+```
+"""
+function pole_zero_cancellation(tf::TransferFunction; verbose::Bool=false)
+    # compute poles, zeros, and k-factor of the transfer function
+    zs, ps, k = zeros_poles_k(tf)
+
+    # store in these boolean arrays whether we will cancel them or not
+    canceled_zeros = [false for i = 1:length(zs)]
+    canceled_poles = [false for i = 1:length(ps)]
+
+    # loop through poles and zeros. if they are equal, cancel!
+    for (i_z, z) in enumerate(zs)
+        for (i_p, p) in enumerate(ps)
+            # the pole and zero are equal...
+            # *and* if this pole has not already been canceled...
+            if isapprox(p, z) && (! canceled_poles[i_p])
+                canceled_zeros[i_z] = true
+                canceled_poles[i_p] = true
+                break
+            end
+        end
+    end
+    @assert sum(canceled_zeros) == sum(canceled_poles)
+    if verbose && sum(canceled_poles) != 0
+        println("canceling the following poles and zeros: ", ps[canceled_poles])
+    end
+
+    return zeros_poles_k(zs[.! canceled_zeros], ps[.! canceled_poles], k, time_delay=tf.time_delay)
+end

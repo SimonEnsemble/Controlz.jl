@@ -70,7 +70,7 @@ Simulate the output $y(t)$ of an LTI system. `simulate` handles two scenarios:
 
 # Example
 
-1. given transfer function `tf` and input function `u`
+Ex. 1: given transfer function `tf` and input function `u`
 
 One can simulate the first order step response as:
 ```
@@ -79,7 +79,7 @@ julia> u(t) = (t < 0.0) ? 0.0 : 1.0
 julia> t, y = simulate(tf, u, (0.0, 12.0))
 ```
 
-2. given Laplace transform of the output, `Y`
+Ex. 2: given Laplace transform of the output, `Y`
 
 One can also simulate the first order step response as:
 ```

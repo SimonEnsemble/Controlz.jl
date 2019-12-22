@@ -12,7 +12,7 @@ include("viz.jl")
 
 export
     # tf.jl
-    TransferFunction, zeros_poles_gain, evaluate, s, proper, strictly_proper,
+    TransferFunction, zeros_poles_gain, zeros_poles_k, zero_frequency_gain, evaluate, s, proper, strictly_proper, pole_zero_cancellation,
     # systems.jl
     characteristic_polynomial,
     # show.jl

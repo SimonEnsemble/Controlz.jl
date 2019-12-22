@@ -24,13 +24,19 @@ const s = TransferFunction([1, 0], [1])
     @test isapprox(g1, g2)
     g2 = 8 * s / (4 * s + 2) * exp(-0.01*s)
     @test ! isapprox(g1, g2)
+    @test isapprox((s^2 + 1) / (3 * s + 3), 1/3*(s^2+1)/(s+1))
+    @test ! isapprox(s^2 + 1 / (3 * s + 3), s*1/3*(s^2+1)/(s+1))
+    @test isapprox((5 * s + 1) / (s ^ 2 + 4 * s + 5), TransferFunction([5, 1], [1, 4, 5]))
+    @test isapprox((5 * s + 1) / (s ^ 2 + 4 * s + 5), zeros_poles_k([-1/5], [-2 + im, -2 - im], 5.0, time_delay=0.0))
     
     ###
     # multiply
     ###
     g1 = TransferFunction([1], [3, 1])
     g2 = TransferFunction([2], [5, 1])
-    @test isapprox(g1 * g2, zeros_poles_gain([], [-1/3, -1/5], 2))
+    @test isapprox(zero_frequency_gain(g1 * g2), 2.0)
+    @test isapprox(g1 * g2, 2/(3*s+1)/(5*s+1))
+    @test isapprox(g1 * g2, zeros_poles_k([], [-1/3, -1/5], 2/15))
     g1 = TransferFunction([2], [4, 1], 4.0)
     g2 = TransferFunction([1], [2, 1], 2.0)
     @test isapprox(g1 * g2, TransferFunction([2], [8, 6, 1], 6.0))
@@ -41,6 +47,8 @@ const s = TransferFunction([1, 0], [1])
     #   subtract
     ###
     @test isapprox(-s, -1.0 * s)
+    g = 3 / (s+2) - 2 / (s+2)
+    @test isapprox(pole_zero_cancellation(g), 1/(s+2))
     
     ###
     #  divide
@@ -60,6 +68,27 @@ const s = TransferFunction([1, 0], [1])
     g = TransferFunction([2], [3, 4])
     @test isapprox(g * s ^ 0, g)
     @test_throws MethodError s ^ -1
+
+    ###
+    #  tf algebra
+    ###
+    τ = 1.4
+    K = 2.8
+    Kc = 3.3
+    Kd = 4.5
+    τI = 9.0
+    τd = 8.2
+    gd = Kd / (τd * s + 1)
+    gp = K / (τ * s + 1)
+    # P-control regulator first-order step response
+    gc = Kc
+    y_ovr_d = gd / (1 + gc * gp)
+    @test isapprox(y_ovr_d, TransferFunction(Kd/(1+Kc*K) * [τ, 1], [τd*τ/(1+Kc*K), (τ+τd+Kc*K*τd)/(1+Kc*K), 1]))
+    # PI-control servo first-order step response
+    gc = Kc * (τI * s + 1) / (τI * s)
+    y_ovr_y_sp = gc * gp / (1 + gc * gp)
+    y_ovr_y_sp = pole_zero_cancellation(y_ovr_y_sp)
+    @test isapprox(y_ovr_y_sp, TransferFunction([τI, 1], [τI*τ/(Kc*K), τI*(1+Kc*K)/(Kc*K), 1]))
 
     ###
     #  time delay
@@ -86,11 +115,36 @@ const s = TransferFunction([1, 0], [1])
     @test k == -1/2
     @test z == [-2.0]
     @test isapprox(p, [-2.0, 2.0])
-    # reconstruct, make sure the same
-    tf2 = zeros_poles_gain(z, p, k)
-    @test isapprox(tf, tf2)
-    tf2 = zeros_poles_gain(z, p, k, time_delay=3.0)
-    @test ! isapprox(tf, tf2)
+
+    ###
+    #  zeros, poles, k
+    ###
+    z = [-3.2, 4.0]
+    p = [-3.0, -3.0, 0.0, 2.0]
+    k = 23.2
+    g = zeros_poles_k(z, p, k)
+    _z, _p, _k = zeros_poles_k(g)
+    sort!(_z)
+    sort!(_p)
+    @test isapprox(z, _z)
+    @test isapprox(p, _p)
+    @test isapprox(k, _k)
+    g2 = zeros_poles_k(z, p, k, time_delay=3.0)
+    @test ! isapprox(g, g2)
+    @test isapprox(g2, g * exp(-3*s))
+    g = 45.0 * s * s / (s * (s-23.0) * (s-8.0))
+    _z, _p, _k = zeros_poles_k(g)
+    sort!(_z)
+    sort!(_p)
+    @test isapprox(_k, 45.0)
+    @test isapprox(_z, [0.0, 0.0])
+    @test isapprox(_p, [0.0, 8.0, 23.0])
+    p = [-2+im, -2-im] # try with complex numbers.
+    z = [-1/5]
+    @test isapprox(zeros_poles_k(z, p, 5.0), (5*s+1) / (s^2+4*s+5))
+    @test ! isapprox(zeros_poles_k(z, p, 5.0, time_delay=1.0), (5*s+1) / (s^2+4*s+5))
+    @test isapprox(zeros_poles_k(z, p, 5.0, time_delay=1.0), (5*s+1) / (s^2+4*s+5) * exp(-s))
+
 
     ###
     #  evaluate
@@ -122,6 +176,17 @@ const s = TransferFunction([1, 0], [1])
     tf = (3 * s * s) / (2 * s + 1)
     @test ! proper(tf)
     @test ! strictly_proper(tf)
+
+    ###
+    #  zeros, poles cancellation
+    ###
+    @test isapprox(pole_zero_cancellation((s-1)^2 / (s-1)), s-1)
+    @test isapprox(pole_zero_cancellation((s-1) / (s-1)^2), 1/(s-1))
+    @test isapprox(pole_zero_cancellation((2*s-2.0) / (s-1)^2), 2/(s-1))
+    @test isapprox(pole_zero_cancellation(s * (9*s+3) / (s * (3*s-3))), (9*s+3)/(3*s-3))
+    @test isapprox(pole_zero_cancellation(s^5/s), s^4)
+    @test isapprox(pole_zero_cancellation(s^5*(s-1)/s/(s-1)), s^4)
+    @test isapprox(pole_zero_cancellation(s^5*(s-1)/s/(s-1)*(s+2)), (s+2)*s^4)
 
     ###
     #  characteristic eqn.
