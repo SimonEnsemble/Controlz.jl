@@ -8,7 +8,7 @@ $$g(s) = \dfrac{4}{4s^2 + 0.8s +1}$$.
 
 ```julia
 julia> using Controlz
-julia> g = 4 / (4 s ^ 2 + 0.8 * s + 1) # construct transfer function
+julia> g = 4 / (4 * s ^ 2 + 0.8 * s + 1) # construct transfer function
 julia> u = 1 / s # unit step input
 julia> t, y = simulate(g * u, (0.0, 50.0)) # simulate from t = 0 to t = 40
 julia> viz_response(t, y, title="SO underdamped step response")
