@@ -6,7 +6,7 @@ many tests are all [here](https://github.com/SimonEnsemble/Controlz.jl/blob/mast
 
 **is `Conrolz.jl` free to use?**
 
-yes, `Controlz.jl` is free and open. see the associated MIT license [here](https://github.com/SimonEnsemble/Controlz.jl/blob/master/LICENSE.md).
+yes, `Controlz.jl` is free and open. see the associated MIT license [here](https://github.com/SimonEnsemble/Controlz.jl/blob/master/LICENSE.md). the source code is on Github [here](https://github.com/SimonEnsemble/Controlz.jl).
 
 **I'm completely new to Julia and don't know where to start.**
 
