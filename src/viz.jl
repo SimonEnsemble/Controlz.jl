@@ -129,15 +129,16 @@ function bode_plot(g::TransferFunction; log10_ω_min::Float64=-4.0, log10_ω_max
     ω = 10.0 .^ range(log10_ω_min, log10_ω_max, length=300)
     g_iω = [evaluate(g, im * ω_i) for ω_i in ω]
 
-    fig, (ax1, ax2) = subplots(2, 1, sharex=true, figsize=(6, 8))
+    fig, (ax1, ax2) = subplots(2, 1, sharex=true, figsize=(5, 7))
     ax1.plot(ω, abs.(g_iω))
     ax1.set_ylabel(L"$|g(i\omega)|$")
+    ax1.set_title("Bode plot")
     ax1.set_xscale("log")
     ax1.set_yscale("log")
     ax2.set_xscale("log")
     ax2.plot(ω, angle.(g_iω), color="C1")
     ax2.set_ylabel(L"$\angle g(i\omega)$")
     xlabel(L"frequency, $\omega$")
-    suptitle("Bode plot")
+    tight_layout()
     return nothing
 end

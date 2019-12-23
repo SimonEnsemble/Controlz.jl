@@ -11,12 +11,12 @@ $$g(s)=\dfrac{5s+1}{s^2 + 4s+5}$$
 in an intuitive way that resembles the algebraic expression:
 
 ```julia
-g = (5 * s + 1) / (s ^ 2 + 4 * s + 5)
+julia> g = (5 * s + 1) / (s ^ 2 + 4 * s + 5)
 ```
 
 alternatively, construct a `TransferFunction` using the powers of the coefficients of the $s$ variables of $g(s)$ in the numerator and denominator polynomials, respectively. The coefficients of the highest powers go first.
 ```julia
-g = TransferFunction([5, 1], [1, 4, 5]) # way 2
+julia> g = TransferFunction([5, 1], [1, 4, 5]) # way 2
 ```
 
 note that `s == TransferFunction([1, 0], [1])`.
@@ -74,17 +74,17 @@ julia> zeros_poles_k(g) # [-1/5], [-2+im, 2+im], 5
 we can add `+`, subject `-`, multiply `*`, and divide `/` transfer functions.
 
 ```julia
-g1 = 3 / (s + 2)
-g2 = 1 / (s + 4)
-g = g1 * g2 # 3 / (s^2 + 6s + 8)
+julia> g1 = 3 / (s + 2)
+julia> g2 = 1 / (s + 4)
+julia> g = g1 * g2 # 3 / (s^2 + 6s + 8)
 ```
 
 ## evaluate a transfer function at a complex number
 
 for example, to evaluate $g(s)=\dfrac{4}{s+2}$ at $s=1-i$:
 ```julia
-g = 4 / (s + 2)
-evaluate(g, 2 * im) # 1 - im
+julia> g = 4 / (s + 2)
+julia> evaluate(g, 2 * im) # 1 - im
 ```
 see the Julia documentation on imaginary numbers [here](https://docs.julialang.org/en/v1/manual/complex-and-rational-numbers/).
 
@@ -93,8 +93,8 @@ see the Julia documentation on imaginary numbers [here](https://docs.julialang.o
 compute the zero-frequency gain of a transfer function $g(s)$, which is $g(s)$ evaluated at $s=0$, as follows:
 
 ```julia
-g = (5 * s + 1) / (s ^ 2 + 4 * s + 5)
-zero_frequency_gain(g) # 0.2 = 1/5
+julia> g = (5 * s + 1) / (s ^ 2 + 4 * s + 5)
+julia> zero_frequency_gain(g) # 0.2 = 1/5
 ```
 
 ## poles, zeros, and zero-frequency gain of a transfer function
@@ -102,8 +102,8 @@ zero_frequency_gain(g) # 0.2 = 1/5
 compute the poles, zeros, and zero-frequency gain of a transfer function as follows:
 
 ```julia
-g = (5 * s + 5) / (s ^ 2 + 4 * s + 5)
-z, p, gain = zeros_poles_gain(g)
+julia> g = (5 * s + 5) / (s ^ 2 + 4 * s + 5)
+julia> z, p, gain = zeros_poles_gain(g)
 # z = [-1.0]
 # p = [-2-im, -2+im]
 # gain  = 1.0
