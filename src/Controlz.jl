@@ -21,5 +21,5 @@ export
     # input_zoo.jl
     unit_step,
     # viz.jl
-    viz_response, viz_poles_and_zeros, viz_nyquist_diagram, viz_root_locus
+    viz_response, viz_poles_and_zeros, nyquist_diagram, root_locus, bode_plot
 end

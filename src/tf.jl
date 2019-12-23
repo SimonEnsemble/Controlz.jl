@@ -166,12 +166,21 @@ zeros_poles_k(tf::TransferFunction) = _zeros(tf), _poles(tf), _k(tf)
 function zeros_poles_k(zeros::Array, poles::Array, k::Union{Float64, Int};
                        time_delay::Union{Int64, Float64}=0)
     # construct numerator polynomial 
-    num = length(zeros) == 0 ? Poly(1.0, :s) : poly(zeros, :s) # poly is from Polynomails.jl
+    top = length(zeros) == 0 ? Poly(1.0, :s) : poly(zeros, :s)
     
     # construct denominator polynomial
-    den = length(poles) == 0 ? Poly(1.0, :s) : poly(poles, :s)
+    bottom = length(poles) == 0 ? Poly(1.0, :s) : poly(poles, :s)
     
-    return TransferFunction(k * num, den, time_delay)
+    # ^ poly is from Polynomails.jl and means "construct polynomial with these roots"
+
+    # owing to numerical errors, the coeff's could be imaginary with tiny imaginary parts
+    #  let's check that the imaginary parts are tiny, then convert the coefficients to real.
+    @assert maximum(abs.(imag.(top.a))) < 1e-6
+    @assert maximum(abs.(imag.(bottom.a))) < 1e-6
+    top = Poly(real.(top.a), :s) # reconstruct a polynomial with real coeffs
+    bottom = Poly(real.(bottom.a), :s)
+    
+    return TransferFunction(k * top, bottom, time_delay)
 end
 
 @doc raw"""
@@ -256,10 +265,6 @@ function pole_zero_cancellation(tf::TransferFunction; verbose::Bool=false)
     if verbose && sum(canceled_poles) != 0
         println("canceling the following poles and zeros: ", ps[canceled_poles])
     end
-    
-    # allow some tolerance in root finding
-    @assert maximum(abs.(imag.(zs))) < 1e-6
-    @assert maximum(abs.(imag.(ps))) < 1e-6
 
-    return zeros_poles_k(real.(zs[.! canceled_zeros]), real.(ps[.! canceled_poles]), k, time_delay=tf.time_delay)
+    return zeros_poles_k(zs[.! canceled_zeros], ps[.! canceled_poles], k, time_delay=tf.time_delay)
 end

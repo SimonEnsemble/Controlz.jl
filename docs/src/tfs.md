@@ -117,6 +117,7 @@ we can cancel pairs of identical poles and zeros in a transfer function.
 julia> g = s * (s+1) / ((s+3) * s * (s+1) ^ 2)
 julia> pole_zero_cancellation(g) # 1 / ((s+3) * (s+1))
 ```
+## detailed docs
 
 ```@docs
     TransferFunction

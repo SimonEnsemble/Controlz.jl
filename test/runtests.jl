@@ -144,6 +144,11 @@ const s = TransferFunction([1, 0], [1])
     @test isapprox(zeros_poles_k(z, p, 5.0), (5*s+1) / (s^2+4*s+5))
     @test ! isapprox(zeros_poles_k(z, p, 5.0, time_delay=1.0), (5*s+1) / (s^2+4*s+5))
     @test isapprox(zeros_poles_k(z, p, 5.0, time_delay=1.0), (5*s+1) / (s^2+4*s+5) * exp(-s))
+    g = (6s^2+18*s+12)/(2*s^3+10*s^2+16*s+12)
+    z, p, k = zeros_poles_k(g)
+    sort!(z)
+    @test isapprox(z, [-2.0, -1.0])
+    @test isapprox(p, [-3.0, -1.0-im, -1+im])
 
 
     ###
@@ -189,7 +194,8 @@ const s = TransferFunction([1, 0], [1])
     @test isapprox(pole_zero_cancellation(s^5*(s-1)/s/(s-1)*(s+2)), (s+2)*s^4)
     g = s * (s+1) / ((s+3) * s * (s+1) ^ 2)
     @test isapprox(pole_zero_cancellation(g), 1 / ((s+3) * (s+1)))
-
+    g = (s+1) / ((s^2-2*s+2) * (s+1) * s) # some imaginary poles
+    @test isapprox(pole_zero_cancellation(g), 1/(s^2-2*s+2)/s)
     ###
     #  characteristic eqn.
     ###

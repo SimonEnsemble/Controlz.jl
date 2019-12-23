@@ -10,6 +10,25 @@ function draw_axes()
     axhline(y=0, color="0.7", lw=2, zorder=1)
 end
 
+"""
+    viz_response(t, y, 
+                 plot_title="", plot_xlabel="time, t", 
+                 plot_ylabel="output, y(t)")
+
+plot y vs. t to visualize the response of a system to an input.
+
+# Arguments
+* `t::Array{Float64}`: array of times
+* `y::Array{Float64}`: array of values of response variables at the corresponding times in `t`
+
+# Example
+```
+julia> g = 4 / (4 * s ^ 2 + 0.8 * s + 1)
+julia> u = 1 / s
+julia> t, y = simulate(g * u, (0.0, 50.0))
+julia> viz_response(t, y)
+```
+"""
 function viz_response(t::Array{Float64}, y::Array{Float64}; 
         plot_title::Union{String, LaTeXString}="", 
         plot_xlabel::Union{String, LaTeXString}=L"time, $t$",
@@ -26,6 +45,11 @@ function viz_response(t::Array{Float64}, y::Array{Float64};
     return nothing
 end
 
+"""
+    viz_poles_and_zeros(tf)
+
+plot the zeros and poles of the transfer function `tf` in the complex plane.
+"""
 function viz_poles_and_zeros(tf::TransferFunction)
     z, p, k = zeros_poles_gain(tf)
     
@@ -41,7 +65,12 @@ function viz_poles_and_zeros(tf::TransferFunction)
     return nothing
 end
 
-function viz_nyquist_diagram(tf::TransferFunction; nb_pts::Int=200)
+"""
+    nyquist_diagram(tf)
+
+plot the Nyquist diagram for a transfer function `tf` to visualize its frequency response.
+"""
+function nyquist_diagram(tf::TransferFunction; nb_pts::Int=300)
     ω = range(-10.0, 10.0, length=nb_pts)
 
     g_iω = [evaluate(tf, ω_i * im) for ω_i in ω]
@@ -56,11 +85,16 @@ function viz_nyquist_diagram(tf::TransferFunction; nb_pts::Int=200)
     return nothing
 end
 
-function viz_root_locus(g_ol::TransferFunction)
-    z, p, k = zeros_poles_gain(g_ol)
+"""
+    root_locus(g_ol)
+
+visualize the root locus plot of an open-loop transfer function `g_ol`.
+"""
+function root_locus(g_ol::TransferFunction)
+    z, p, k = zeros_poles_k(g_ol)
 
     # keep gain of G_ol(s) +ve, scale with gain K
-    Kcs = k * 10.0 .^ range(-6, 2, length=300)
+    Kcs = k * 10.0 .^ range(-6, 2, length=500)
     pushfirst!(Kcs, 0.0)
 
     rloc = zeros(Complex, length(Kcs), length(p))
@@ -78,10 +112,32 @@ function viz_root_locus(g_ol::TransferFunction)
         plot(real.(rloc[:, i]), imag.(rloc[:, i]), zorder=100, color="C$(i-1)")
         scatter(real.([p[i]]), imag.([p[i]]), marker="x", label="poles", color="C$(i-1)", s=50, zorder=100)
     end
-    xlabel("Re"),
-    ylabel("Im"),
+    xlabel("Re")
+    ylabel("Im")
     draw_axes()
     title("root locus")
     tight_layout()
+    return nothing
+end
+
+"""
+    bode_plot(tf, log10_ω_min=-4.0, log10_ω_max=4.0)
+
+draw the Bode plot of a transfer function `tf` to visualize its frequency response.
+"""
+function bode_plot(g::TransferFunction; log10_ω_min::Float64=-4.0, log10_ω_max::Float64=4.0)
+    ω = 10.0 .^ range(log10_ω_min, log10_ω_max, length=300)
+    g_iω = [evaluate(g, im * ω_i) for ω_i in ω]
+
+    fig, (ax1, ax2) = subplots(2, 1, sharex=true, figsize=(6, 8))
+    ax1.plot(ω, abs.(g_iω))
+    ax1.set_ylabel(L"$|g(i\omega)|$")
+    ax1.set_xscale("log")
+    ax1.set_yscale("log")
+    ax2.set_xscale("log")
+    ax2.plot(ω, angle.(g_iω), color="C1")
+    ax2.set_ylabel(L"$\angle g(i\omega)$")
+    xlabel(L"frequency, $\omega$")
+    suptitle("Bode plot")
     return nothing
 end
