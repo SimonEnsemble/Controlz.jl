@@ -10,7 +10,8 @@ makedocs(
     pages = ["Controlz" => "index.md",
              "Transfer Functions" => "tfs.md",
              "Simulation" => "sim.md",
-             "Visualization" => "viz.md"],
+             "Visualization" => "viz.md",
+             "FAQ" => "faq.md"],
     format = Documenter.HTML(assets = ["assets/flux.css"])
 )
 

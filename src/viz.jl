@@ -1,9 +1,4 @@
 using LaTeXStrings
-using PyPlot
-
-# hipster plot theme
-PyPlot.matplotlib.style.use(joinpath(
-    replace(pathof(Controlz), "src/Controlz.jl" => "src"), "hipster.mplstyle"))
 
 function draw_axes()
     axvline(x=0, color="0.7", lw=2, zorder=1)
@@ -15,7 +10,7 @@ end
                  plot_title="", plot_xlabel="time, t", 
                  plot_ylabel="output, y(t)")
 
-plot y vs. t to visualize the response of a system to an input.
+plot `y` vs. `t` to visualize the response of a system to an input. typically `t` and `y` are outputs of [`simulate`](@ref).
 
 # Arguments
 * `t::Array{Float64}`: array of times

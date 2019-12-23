@@ -2,6 +2,11 @@ module Controlz
 
 using Polynomials
 using DifferentialEquations
+using PyPlot
+
+# hipster plot theme
+PyPlot.matplotlib.style.use(joinpath(
+    replace(pathof(Controlz), "src/Controlz.jl" => "src"), "hipster.mplstyle"))
 
 include("tf.jl")
 include("systems.jl")

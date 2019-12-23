@@ -44,6 +44,13 @@ const s = TransferFunction([1, 0], [1])
     @test isapprox(5 * g, TransferFunction([10], [3, 4]))
 
     ###
+    #  add
+    ###
+    g1 = 3 / (s + 2)
+    g2 = 1 / (s + 4)
+    @test isapprox(g1 + g2, (4*s+14) / (s^2 + 6*s + 8))
+
+    ###
     #   subtract
     ###
     @test isapprox(-s, -1.0 * s)
@@ -53,6 +60,8 @@ const s = TransferFunction([1, 0], [1])
     ###
     #  divide
     ###
+    g1 = TransferFunction([2], [4, 1], 4.0)
+    g2 = TransferFunction([1], [2, 1], 2.0)
     @test isapprox(g1 / g2, TransferFunction([4, 2], [4, 1], 2.0))
     @test isapprox(g1 / 2, TransferFunction([1], [4, 1], 4.0))
     @test isapprox(5 / (s+3), TransferFunction([5], [1, 3]))
