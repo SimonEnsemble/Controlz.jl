@@ -138,4 +138,6 @@ under the hood, we compare all pairs of poles and zeros to look for identical pa
     evaluate
     proper
     strictly_proper
+    characteristic_polynomial
+    zpk_form
 ```

@@ -19,3 +19,7 @@ test = ["Test", "Documenter", "Polynomials"]
 
 [compat]
 julia = "1.3"
+DifferentialEquations = "6.9.0"
+LaTeXStrings = "1.0.3"
+Polynomials = "0.6.0"
+PyPlot = "2.8.2"
