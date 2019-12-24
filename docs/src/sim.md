@@ -10,7 +10,7 @@ learn by example! in each case, `simulate` returns an array of times `t` and cor
 g = 4 / (4 * s ^ 2 + 0.8 * s + 1) # construct transfer function
 u = 1 / s # unit step input
 Y = g * u # system output
-t, y = simulate(Y, (0.0, 50.0)) # simulate from t = 0 to t = 50
+t, y = simulate(Y, 50.0) # simulate until t = 50
 ```
 
 we can then plot the `y` array versus the `t` array:

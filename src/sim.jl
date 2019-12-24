@@ -50,19 +50,16 @@ end
 
 
 @doc raw"""
-    t, y = simulate(tf, u, tspan, nb_time_points=100) # explicit input function u(t)
-    t, y = simulate(Y, tspan, nb_time_points=100) # invert Y(s)
+    t, y = simulate(Y, final_time, nb_time_points=100) # invert Y(s)
 
-Simulate the output $y(t)$ of an LTI system. `simulate` handles two scenarios:
-1. we have the transfer function `tf` that characterizes how the LTI system responds to inputs and an input function `u`, an explicit function of time $u(t)$.
-2. we have the Laplace transform of the output, $Y(s)$, `Y`.
+Simulate the output $y(t)$ of an LTI system, given the Laplace transform of the output, $Y(s)$, `Y`.
 
 # Arguments
-* `tf::TransferFunction`: the transfer function describing the relationship between input `u` and output `y`
 * `Y::TransferFunction`: the Laplace transform of the output $y(t)$. Usually formed by $g(s)U(s)$, where $U(s)$ is the Laplace transform of the input.
-* `u::Function`: the input function u(t)
-* `tspan::Tuple{Float64, Float64}`: the time span over which to simulate the LTI system.
+* `final_time::Tuple{Float64, Float64}`: the duration over which to simulate the output of the LTI system, starting at time zero.
 * `nb_time_points::Int=100`: the number of time points at which to save the solution $y(t)$
+
+Two points before time zero are included to illustrate that it is assumed $y(t)=0$ for $t<0$.
 
 # Returns
 * `t::Array{Float64, 1}`: array of times $t$ at which the solution was saved
@@ -70,61 +67,21 @@ Simulate the output $y(t)$ of an LTI system. `simulate` handles two scenarios:
 
 # Example
 
-Ex. 1: given transfer function `tf` and input function `u`
+One can simulate the first order step response as, given the Laplace transform of the output, `Y`:
 
-One can simulate the first order step response as:
 ```
-julia> tf = 4 / (3 * s + 1)
-julia> u(t) = (t < 0.0) ? 0.0 : 1.0
-julia> t, y = simulate(tf, u, (0.0, 12.0))
-```
-
-Ex. 2: given Laplace transform of the output, `Y`
-
-One can also simulate the first order step response as:
-```
-julia> tf = 4 / (3 * s + 1)
-julia> Y = tf / s
-julia> t, y = simulate(Y, (0.0, 12.0))
+julia> g = 4 / (3 * s + 1) # first-order transfer function
+julia> u = 1 / s #  unit step input
+julia> Y = g / s
+julia> t, y = simulate(Y, 12.0)
 ```
 """
-function simulate(tf::TransferFunction, u::Function, tspan::Tuple{Float64, Float64};
-        nb_time_points::Int=100)
-    if ! proper(tf)
-        error("transfer function not proper...")
-    end
-
-    a_i(i::Int) = tf.denominator[i]
-    b_i(i::Int) = tf.numerator[i]
-    n = degree(tf.denominator)
-
-    # convert tf to state space form
-    A, B, C = tf_to_ss(tf)
-
-    x0 = zeros(n, 1) # initial condition
-
-    f(x, p, t) = A * x + B * u(t - tf.time_delay) # RHS of ODE (ignore p for params)
-    prob = ODEProblem(f, x0, tspan)
-    # pass time delay as discontinuity to avoid spurious shift in result
-    sol = solve(prob, d_discontinuities=[tf.time_delay])
-
-    t = range(tspan[1], stop=tspan[2], length=nb_time_points)
-    y = [NaN for i = 1:nb_time_points]
-    for (i, t_i) in enumerate(t)
-        if t_i < 0.0
-            y[i] = 0.0
-        else
-            y[i] = (C * sol(t_i))[1] + b_i(n) / a_i(n) * u(t_i - tf.time_delay)
-        end
-    end
-    return collect(t), y
-end
-
-function simulate(Y::TransferFunction, tspan::Tuple{Float64, Float64}; nb_time_points::Int=100)
+function simulate(Y::TransferFunction, final_time::Float64; nb_time_points::Int=100)
     if ! proper(Y)
-        error("transfer function not proper...")
+        error("LTI system is not proper...")
     end
-
+    
+    # coeffs on denominator, numerator polynomial
     a_i(i::Int) = Y.denominator[i]
     b_i(i::Int) = Y.numerator[i]
     n = degree(Y.denominator)
@@ -135,18 +92,17 @@ function simulate(Y::TransferFunction, tspan::Tuple{Float64, Float64}; nb_time_p
     x0 = deepcopy(B) # initial condition
 
     f(x, p, t) = A * x # RHS of ODE (ignore p for params)
-    prob = ODEProblem(f, x0, tspan)
-    # pass time delay as discontinuity to avoid spurious shift in result
-    sol = solve(prob, d_discontinuities=[Y.time_delay])
+    prob = ODEProblem(f, x0, (0.0, final_time))
+    sol = solve(prob, d_discontinuities=[0.0])
 
-    t = range(tspan[1], stop=tspan[2], length=nb_time_points)
+    t = vcat([-0.05 * final_time, 0.0], range(1e-4, final_time, length=nb_time_points - 2))
     y = [NaN for i = 1:nb_time_points]
     for (i, t_i) in enumerate(t)
-        if t_i < 0.0
+        if t_i < Y.time_delay
             y[i] = 0.0
         else
-            y[i] = (C * sol(t_i))[1]
+            y[i] = (C * sol(t_i - Y.time_delay))[1] # put in shifted time
         end
     end
-    return collect(t), y
+    return t, y
 end

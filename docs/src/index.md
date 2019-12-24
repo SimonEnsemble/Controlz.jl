@@ -15,7 +15,7 @@ g = 4 / (4 * s ^ 2 + 0.8 * s + 1) # construct transfer function
 U = 1 / s # unit step input, U(s)
 Y = g * U # system output, Y(s)
 
-t, y = simulate(Y, (0.0, 50.0)) # simulate from t = 0 to t = 50
+t, y = simulate(Y, 50.0) # simulate until t = 50
 
 viz_response(t, y, title="SO underdamped step response")
 ```
