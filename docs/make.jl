@@ -11,6 +11,7 @@ makedocs(
              "Transfer Functions" => "tfs.md",
              "Simulation" => "sim.md",
              "Visualization" => "viz.md",
+             "Conrol systems" => "controls.md",
              "FAQ" => "faq.md"],
     format = Documenter.HTML(assets = ["assets/flux.css"])
 )

@@ -11,8 +11,8 @@ include("tf.jl")
 include("systems.jl")
 include("show.jl")
 include("sim.jl")
-include("input_zoo.jl")
 include("viz.jl")
+include("controls.jl")
 
 export
     # tf.jl
@@ -22,8 +22,8 @@ export
     # show.jl
     # sim.jl
     simulate,
-    # input_zoo.jl
-    unit_step,
     # viz.jl
-    viz_response, viz_poles_and_zeros, nyquist_diagram, root_locus, bode_plot
+    viz_response, viz_poles_and_zeros, nyquist_diagram, root_locus, bode_plot,
+    # controlz.jl
+    PI, PID
 end

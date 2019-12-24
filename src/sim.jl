@@ -54,6 +54,8 @@ end
 
 Simulate the output $y(t)$ of an LTI system, given the Laplace transform of the output, $Y(s)$, `Y`.
 
+In other words, `simulate` inverts an expression in the frequency domain into the time domain.
+
 # Arguments
 * `Y::TransferFunction`: the Laplace transform of the output $y(t)$. Usually formed by $g(s)U(s)$, where $U(s)$ is the Laplace transform of the input.
 * `final_time::Tuple{Float64, Float64}`: the duration over which to simulate the output of the LTI system, starting at time zero.
@@ -71,8 +73,8 @@ One can simulate the first order step response as, given the Laplace transform o
 
 ```
 julia> g = 4 / (3 * s + 1) # first-order transfer function
-julia> u = 1 / s #  unit step input
-julia> Y = g / s
+julia> U = 1 / s #  unit step input
+julia> Y = g / s # output
 julia> t, y = simulate(Y, 12.0)
 ```
 """
@@ -95,7 +97,7 @@ function simulate(Y::TransferFunction, final_time::Float64; nb_time_points::Int=
     prob = ODEProblem(f, x0, (0.0, final_time))
     sol = solve(prob, d_discontinuities=[0.0])
 
-    t = vcat([-0.05 * final_time, 0.0], range(1e-4, final_time, length=nb_time_points - 2))
+    t = vcat([-0.05 * final_time, -1e-5], range(1e-5, final_time, length=nb_time_points - 2))
     y = [NaN for i = 1:nb_time_points]
     for (i, t_i) in enumerate(t)
         if t_i < Y.time_delay

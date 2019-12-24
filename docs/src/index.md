@@ -20,7 +20,7 @@ t, y = simulate(Y, 50.0) # simulate until t = 50
 viz_response(t, y, title="SO underdamped step response")
 ```
 
-![](example_response.png)
+![](SO_underdamped_step_response.png)
 
 # install the `Controlz.jl` package in Julia
 

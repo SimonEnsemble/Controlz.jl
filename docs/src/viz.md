@@ -13,12 +13,13 @@ viz_poles_and_zeros(g)
 
 ```
 g = 4 / (4 * s ^ 2 + 0.8 * s + 1)
-u = 1 / s
-t, y = simulate(g * u, (0.0, 50.0))
+U = 1 / s
+Y = g * U
+t, y = simulate(Y, (0.0, 50.0))
 viz_response(t, y, plot_title="SO underdamped step response")
 ```
 
-![](example_response.png)
+![](SO_underdamped_step_response.png)
 
 ## Nyquist diagram
 

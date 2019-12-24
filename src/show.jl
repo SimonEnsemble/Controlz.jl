@@ -16,7 +16,9 @@ end
 function Base.show(io::IO, tf::TransferFunction)
     top = poly_to_string(tf.numerator)
     bottom = poly_to_string(tf.denominator)
-    
+
+    print(io, "\n")
+
     # is this a rational polynomial? then just print the numerator / constant
     if degree(tf.denominator) == 0
         # normalized numerator

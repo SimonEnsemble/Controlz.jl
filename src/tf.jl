@@ -108,7 +108,7 @@ end
 
 write transfer function in zeros, poles, k-factor form:
 
-$$g(s)=k\dfrac{\Pi_j (s-z_j}{\Pi_j (s-p_j}$$
+$$g(s)=k\dfrac{\Pi_j (s-z_j)}{\Pi_j (s-p_j)}$$
 where $z_j$ is zero $j$, $p_j$ is pole $j$, and $k$ is a constant factor (not equal to the zero-frequency gain) that uniquely specifies the transfer function.
 
 this is achieved by multiplying by 1.0 in a fancy way such that the highest power of s in the denominator has a coefficient of 1.
