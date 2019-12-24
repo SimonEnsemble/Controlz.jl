@@ -49,13 +49,12 @@ root_locus(g_ol)
 
 ## hipster plot theme
 
-we provide a hipster plot theme that you can invoke by:
+invoke the hipster plot theme used to make plots for this documentation by:
 
 ```
 using Controlz
 using PyPlot
-PyPlot.matplotlib.style.use(joinpath(
-    replace(pathof(Controlz), "src/Controlz.jl" => "src"), "hipster.mplstyle"))
+PyPlot.matplotlib.style.use(normpath(joinpath(pathof(Controlz), "..", "hipster.mplstyle")))
 ```
 
 ## detailed docs

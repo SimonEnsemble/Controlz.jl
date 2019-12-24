@@ -5,8 +5,7 @@ using DifferentialEquations
 using PyPlot
 
 # hipster plot theme
-PyPlot.matplotlib.style.use(joinpath(
-    replace(pathof(Controlz), "src/Controlz.jl" => "src"), "hipster.mplstyle"))
+PyPlot.matplotlib.style.use(normpath(joinpath(pathof(Controlz), "..", "hipster.mplstyle")))
 
 include("tf.jl")
 include("systems.jl")
