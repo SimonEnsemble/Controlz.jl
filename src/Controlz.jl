@@ -9,10 +9,10 @@ PyPlot.matplotlib.style.use(normpath(joinpath(pathof(Controlz), "..", "hipster.m
 
 include("tf.jl")
 include("systems.jl")
-include("show.jl")
 include("sim.jl")
 include("viz.jl")
 include("controls.jl")
+include("show.jl")
 
 export
     # tf.jl
@@ -25,5 +25,5 @@ export
     # viz.jl
     viz_response, viz_poles_and_zeros, nyquist_diagram, root_locus, bode_plot,
     # controlz.jl
-    PI, PID
+    PController, PIController, PIDController
 end

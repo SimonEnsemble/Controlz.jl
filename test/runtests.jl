@@ -358,3 +358,9 @@ end
     y_truth[t .< 0.0] .= 0.0
     @test isapprox(y_truth, y, rtol=0.001)
 end
+
+@testset "testing Controls" begin
+    @test isapprox(TransferFunction(PIController(1.3, 2.0)), 1.3 * (1+1/(2*s)))
+    @test isapprox(TransferFunction(PIDController(1.3, 2.0, 0.0)), 1.3 * (1+1/(2*s)))
+    @test isapprox(TransferFunction(PIDController(1.3, 2.0, 0.1)), 1.3 * (1+1/(2*s) + 0.1*s))
+end

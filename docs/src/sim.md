@@ -19,6 +19,10 @@ t, y = simulate(Y, 50.0) # simulate until t = 50
 
 we can then plot the `y` array versus the `t` array:
 
+```julia
+viz_response(t, y, plot_title="SO underdamped step response")
+```
+
 ![](SO_underdamped_step_response.png)
 
 ## response of a first-order plus time delay system to a unit step input
@@ -33,6 +37,8 @@ U = 1 / s # step input
 Y = g * U
 
 t, y = simulate(Y, 15.0) # simulate until t = 15
+
+viz_response(t, y, plot_title="FOPTD step response")
 ```
 
 ![](FOPTD_step_response.png)
@@ -48,7 +54,10 @@ we can numerically invert $\dfrac{s^2-a^2}{(s^2+a^2)^2}$ as follows:
 ```julia
 a = π
 U = (s^2 - a^2) / (s^2 + a^2) ^ 2
+
 t, u = simulate(U, 8.0, nb_time_points=300) # simulate until t=8, use 300 time points for high resolution
+
+viz_response(t, u, plot_title=L"inverting an input $U(s)$", plot_ylabel=L"$u(t)$")
 ```
 
 the `nb_time_points` argument gives a `t` array with higher resolution for plotting the response.

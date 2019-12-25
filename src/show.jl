@@ -52,3 +52,22 @@ function Base.show(io::IO, tf::TransferFunction)
     print(io, bottom)
     return nothing
 end
+
+function Base.show(io::IO, pc::PController)
+    println(io, "P controller")
+    println(io, "\tcontroller gain Kc = ", pc.Kc)
+end
+
+function Base.show(io::IO, pic::PIController)
+    println(io, "PI controller")
+    println(io, "\tcontroller gain Kc = ", pic.Kc)
+    println(io, "\tintegral time constant τI = ", pic.τI)
+end
+
+function Base.show(io::IO, pidc::PIDController)
+    println(io, "PID controller")
+    println(io, "\tcontroller gain Kc = ", pidc.Kc)
+    println(io, "\tintegral time constant τI = ", pidc.τI)
+    println(io, "\tderivative time constant τD = ", pidc.τD)
+    println(io, "\tderivative filter α = ", pidc.α)
+end
