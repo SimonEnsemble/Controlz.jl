@@ -1,2 +1,3 @@
-convert -density 300 simple_servo.pdf simple_servo.png
-convert simple_servo.png -trim simple_servo.png
+muhfile="full_feedback_control_system"
+convert -density 300 $muhfile.pdf $muhfile.png
+convert $muhfile.png -trim $muhfile.png
