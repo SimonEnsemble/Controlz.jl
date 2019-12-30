@@ -77,7 +77,7 @@ a cheap way of getting the set point $y_{sp}(t)$ is:
 t, ysp = simulate(Y_sp, final_time)
 ```
 
-finally, we can plot `y`, `ysp`, and `u` against `t` to visualize the response of our feedback PI conrol system to a set point change.
+finally, we can plot `y`, `ysp`, and `u` against `t` to visualize the response of our feedback PI control system to a set point change.
 
 ![](simple_servo_response.png)
 
