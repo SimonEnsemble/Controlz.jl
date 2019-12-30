@@ -6,7 +6,7 @@ we build upon `simulate` to simulate feedback and feedforward control systems.
 
 we express PID controller transfer functions in the form:
 
-$$g_c(s)=K_c \bigl[1+\frac{1}{\tau_I}+\tau_D s \frac{1}{\tau_D \alpha s + 1}\bigr]$$
+$$g_c(s)=K_c \left[1+\frac{1}{\tau_I}+\tau_D s \frac{1}{\tau_D \alpha s + 1}\right]$$
 
 where $\alpha$ characterizes the derivative filter. this controller function function governs the controller output in response to the input error signal.
 
@@ -32,11 +32,11 @@ gc = TransferFunction(pic) # (2s+2) / s
 
 ## servo response of a simple control system
 
-with block diagram algebra, we can use [`simulate`](@ref) to simulate a control system. as an example, we simulate the response of a simple feedback control system to a set point change.
+with skills in block diagram algebra, we can use [`simulate`](@ref) to simulate a control system with a great degree of flexibility. as an example, we simulate the response of a simple feedback control system to a set point change.
 
 ![](assets/simple_servo.png)
 
-as an example, we specify $g_c(s)$ as a PI controller and $g_p(s)$ as a first-order system. the latter describes how the process responds to inputs. the input to the process here is provided by the controller.
+let's specify $g_c(s)$ as a PI controller and $g_p(s)$ as a first-order system. the former describes the controller output responds to the error signal. the latter describes how the process responds to inputs-- here, the process input is provided by the controller.
 
 ```julia
 pic = PIController(1.0, 1.0) 
@@ -77,11 +77,11 @@ a cheap way of getting the set point $y_{sp}(t)$ is:
 t, ysp = simulate(Y_sp, final_time)
 ```
 
-finally, we can plot `y`, `ysp`, and `u` against `t` to visualize the response of our feedback PI conrol system to a set point change.
+finally, we can plot `y`, `ysp`, and `u` against `t` to visualize the response of our feedback PI control system to a set point change.
 
 ![](simple_servo_response.png)
 
-also plotted separately is the contribution of the controller output by the P- and I- components of the PI controller, obtained via:
+also plotted separately is the contribution to the controller output by the P- and I- components of the PI controller, obtained via:
 ```julia
 U_Paction = Kc * E # P-action
 U_Iaction = Kc * τI / s * E # I-action

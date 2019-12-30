@@ -61,11 +61,11 @@ In other words, `simulate` inverts an expression in the frequency domain into th
 * `final_time::Tuple{Float64, Float64}`: the duration over which to simulate the output of the LTI system, starting at time zero.
 * `nb_time_points::Int=100`: the number of time points at which to save the solution $y(t)$
 
-Two points before time zero are included to illustrate that it is assumed $y(t)=0$ for $t<0$.
+Two time points preceding $t=0$ are included to illustrate that it is assumed $y(t)=0$ for $t<0$.
 
 # Returns
-* `t::Array{Float64, 1}`: array of times $t$ at which the solution was saved
-* `y::Array{Float64, 1}`: array of $y$ values at corresponding times in `t`
+* `t::Array{Float64, 1}`: array of times: $t_i$'s
+* `y::Array{Float64, 1}`: array of $y$ values at corresponding times in `t`: $y_i$'s, where $y_i=y(t_i)$.
 
 # Example
 
@@ -107,4 +107,41 @@ function simulate(Y::TransferFunction, final_time::Float64; nb_time_points::Int=
         end
     end
     return t, y
+end
+
+@doc raw"""
+    y_at_t̃ = interpolate(t, y, t̃)
+
+given an array of times $t_i$ in `t` and corresponding values of $y(t)$, $y_i=y(t_i)$ in the array `y`, interpolate to approximate the function $y(t)$ at a new time `t̃`, i.e. $y(\tilde{t})$.
+
+the output of [`simulate`](@ref) is an array of times `t` and corresponding output values `y`. `interpolate` is useful for obtaining the solution at a particular time `t̃` that is not necessarily present in the array `t`.
+
+an error is thrown if `maximum(t) < t̃ < minimum(t)` (extrapolation) or if the `t` array is not sorted.
+
+# Arguments
+* `t::Array{Float64, 1}`: array of times $t_i$. these must be sorted.
+* `y::Array{Float64, 1}`: an array of corresponding $y$-values $y_i=y(t_i)$
+* `t̃::Float64`: the new time at which we wish to know $y$. i.e. we wish to know $y(\tilde{t})$.
+
+# Returns
+* `y_at_t̃::Float64`: the value of $y$ when $t$ is `t̃`, $y(\tilde{t})$, according to linear interpolation.
+
+# Example
+
+the unit step response of a first-order process with time constant $\tau$ is $\approx63\%$ of the final value when $t=\tau$.
+
+```julia
+julia> τ = 3.45
+julia> g = 1 / (τ * s + 1) # FO system
+julia> t, y = simulate(g / s, 10.0) # unit step response
+julia> y_at_τ = interpolate(t, y, τ) # 0.63
+```
+"""
+function interpolate(t::Array{Float64, 1}, y::Array{Float64, 1}, t̃::Float64)
+    if t̃ < minimum(t) || t̃ > maximum(t)
+        error(@sprintf("t̃ = %f is outside the range of the t-array passed, %f to %f.\n", t̃, minimum(t), maximum(t)))
+    end
+    # from Interpolations.jl.
+    #   will throw error if t not sorted. 
+    return LinearInterpolation(t, y)(t̃)
 end
