@@ -357,6 +357,16 @@ end
     y_truth *= K
     y_truth[t .< 0.0] .= 0.0
     @test isapprox(y_truth, y, rtol=0.001)
+
+    # inerpolate
+    t = [0.0, 1.0, 2.0]
+    y = [0.0, 5.0, 10.0]
+    @test isapprox(interpolate(t, y, 1.0), 5.0)
+    @test isapprox(interpolate(t, y, 1.2), 1.2*5)
+    τ = 3.45
+    g = 1 / (τ * s + 1)
+    t, y = simulate(g / s, 10.0)
+    @test isapprox(interpolate(t, y, τ), 0.632, atol=0.002)
 end
 
 @testset "testing Controls" begin

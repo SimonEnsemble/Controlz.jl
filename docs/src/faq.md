@@ -2,7 +2,7 @@
 
 **is `Controlz.jl` well-tested?**
 
-many tests are all [here](https://github.com/SimonEnsemble/Controlz.jl/blob/master/test/runtests.jl). run the tests by `using Controlz, Pkg; Pkg.test("Controlz")`. that said, this package is not tested enough such that it can be used to design engineering control systems. `Controlz.jl` is for educational purposes at this point.
+many tests are all [here](https://github.com/SimonEnsemble/Controlz.jl/blob/master/test/runtests.jl). run the tests by `using Controlz, Pkg; Pkg.test("Controlz")`. that said, this package is not tested enough such that it can be used to design engineering control systems. `Controlz.jl` is for educational purposes only at this point.
 
 **is `Conrolz.jl` free to use?**
 

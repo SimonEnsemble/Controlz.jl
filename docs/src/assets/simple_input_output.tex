@@ -28,7 +28,7 @@
 
 % The block diagram code is probably more verbose than necessary
 \begin{tikzpicture}[auto, node distance=1cm,>=latex']
-    \node [block, node distance=1.5cm] (g) {$g(s)$};
+    \node [block, node distance=1.5cm, label=process] (g) {$g(s)$};
     \node [input, node distance=2cm, left of=g] (U) {};
 	\node [output, name=output, right of=g, node distance=2cm] {$Y(s)$};
 	

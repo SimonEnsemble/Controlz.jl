@@ -45,7 +45,7 @@
 %    \draw [draw,->] (input) -- system {$r$} (sum);
     \draw [->, line width=0.5mm] (Gc) -- node {$U(s)$} (Gp);
     \draw [->, line width=0.5mm] (Gp) -- node[name=y] {$Y(s)$} (output);
-    \draw [->, line width=0.5mm] (comparator) -- node {} (Gc);
+    \draw [->, line width=0.5mm] (comparator) -- node {$E(s)$} (Gc);
     \draw [->, line width=0.5mm] (Ysp) -- node {$Y_{sp}(s)$} (comparator);
 
     \draw [-, line width=0.5mm] (y) |- (ptbelow);
