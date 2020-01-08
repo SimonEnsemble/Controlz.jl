@@ -1,5 +1,6 @@
 font.size : 16
 axes.grid : True
+grid.linestyle : --
 axes.facecolor : (1.0, 1.0, 0.94)
 lines.linewidth : 3
 font.family : Ubuntu Mono
