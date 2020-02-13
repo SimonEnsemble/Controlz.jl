@@ -3,7 +3,7 @@ repo_url:         https://github.com/SimonEnsemble/Controlz.jl
 site_description: Documentation for Controlz.jl
 site_author:      SimonEnsemble
 
-theme: material
+theme: cinder
 
 extra_css:
   - assets/flux.css
