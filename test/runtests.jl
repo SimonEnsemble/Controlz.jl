@@ -15,6 +15,9 @@ const s = TransferFunction([1, 0], [1])
     @test tf.time_delay == 3.2
     @test tf.numerator == Poly([1], :s)
     @test tf.denominator == Poly([2, 3], :s) # reverse order
+    # special constructors
+    @test first_order_system(5.0, 8.0) == 5 / (8 * s + 1)
+    @test second_order_system(5.0, 8.0, 0.1) == 5 / (8^2 * s^2 + 2*8*0.1*s + 1)
 
     ###
     #  isapprox
@@ -205,11 +208,39 @@ const s = TransferFunction([1, 0], [1])
     @test isapprox(pole_zero_cancellation(g), 1 / ((s+3) * (s+1)))
     g = (s+1) / ((s^2-2*s+2) * (s+1) * s) # some imaginary poles
     @test isapprox(pole_zero_cancellation(g), 1/(s^2-2*s+2)/s)
+
     ###
     #  characteristic eqn.
     ###
     g_ol = 4 / (s + 3) / (s + 2) / (s + 1)
     @test characteristic_polynomial(g_ol) == Poly([10.0, 11, 6, 1], :s)
+
+    ###
+    #   order
+    ###
+    g = (s + 1) / (s + 1) ^ 2
+    @test order(g) == (1, 2)
+    g = pole_zero_cancellation(g)
+    @test order(g) == (0, 1)
+    @test order(first_order_system(1.0, 2.0)) == (0, 1)
+    @test order(second_order_system(1.0, 2.0, 1.9)) == (0, 2)
+
+    ###
+    #  time constant, damping coefficient
+    ###
+    g = 4 / (6 * s + 2)
+    @test isapprox(time_constant(g), 3.0)
+    @test_throws ErrorException damping_coefficient(g)
+    g = 1.0 / (8 * s^2 + 0.8 * s + 2)
+    @test isapprox(time_constant(g), 2.0)
+    @test_throws ErrorException time_constant(s / (s+4)) # only makes sense with first, second order...
+    g = 1.0 / (8 * s^2 + 0.8 * s + 2)
+    @test isapprox(damping_coefficient(g), 0.1) # 0.1
+    τ = 4.3
+    ξ = 1.2
+    g = second_order_system(20.0, τ, ξ)
+    @test isapprox(time_constant(g), τ)
+    @test isapprox(damping_coefficient(g), ξ)
 end
 
 @testset "testing Simulation" begin

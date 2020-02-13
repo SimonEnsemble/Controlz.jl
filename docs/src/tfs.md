@@ -118,7 +118,7 @@ z, p, gain = zeros_poles_gain(g)
 
 cancel pairs of identical poles and zeros in a transfer function as follows:
 
-```
+```julia
 g = s * (s+1) / ((s+3) * s * (s+1) ^ 2)
 pole_zero_cancellation(g) # 1 / ((s+3) * (s+1))
 ```
@@ -126,6 +126,62 @@ pole_zero_cancellation(g) # 1 / ((s+3) * (s+1))
 note that this cancellation is not done automatically.
 
 under the hood, we compare all pairs of poles and zeros to look for identical pairs via `isapprox`. after removing identical pole-zero pairs, we reconstruct the transfer function from the remaining poles, zeros, and k-factor. we ensure that the coefficients in the resulting rational function are real.
+
+## the order of a transfer function
+
+we can find the order of the polynomials in the numerator and denominator of the rational function comprising the transfer function:
+
+```julia
+g = (s + 1) / ((s + 2) * (s + 3))
+order(g) # (1, 2)
+```
+
+note that is only the *apparent* order; you may need to call `pole_zero_cancellation` to get the effective order:
+```julia
+g = (s + 1) / ((s + 2) * (s + 3) * (s + 1))
+order(g) # (1, 3)
+g = pole_zero_cancellation(g)
+order(g) # (0, 2)
+```
+
+## special transfer functions
+
+### (0, 1) order transfer functions
+
+$$g(s)=\frac{K}{\tau s +1}$$
+
+easily construct:
+
+```julia
+K = 2.0
+τ = 3.0
+g = first_order_system(K, τ) # 2 / (3 * s + 1)
+```
+
+compute time constant:
+```
+time_constant(10 / (6 * s + 2)) # 3
+```
+
+### (0, 2) order transfer functions
+
+$$g(s)=\frac{K}{\tau^2 s^2 + 2\tau \xi s +1}$$
+
+easily construct:
+
+```julia
+K = 1.0
+τ = 2.0
+ξ = 0.1
+g = first_order_system(K, τ, ξ) # 1 / (4 * s^2 + 0.4 * s + 1)
+```
+
+compute time constant, damping coefficient:
+```julia
+g = 1.0 / (8 * s^2 + 0.8 * s + 2)
+τ = time_constant(g) # 2.0
+ξ = damping_coefficient(g) # 0.1
+```
 
 ## detailed docs
 
@@ -140,4 +196,9 @@ under the hood, we compare all pairs of poles and zeros to look for identical pa
     strictly_proper
     characteristic_polynomial
     zpk_form
+    order
+    first_order_system
+    second_order_system
+    time_constant
+    damping_coefficient
 ```

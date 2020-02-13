@@ -10,6 +10,7 @@ using Printf
 PyPlot.matplotlib.style.use(normpath(joinpath(pathof(Controlz), "..", "hipster.mplstyle")))
 
 include("tf.jl")
+include("special_tfs.jl")
 include("systems.jl")
 include("sim.jl")
 include("viz.jl")
@@ -18,7 +19,9 @@ include("show.jl")
 
 export
     # tf.jl
-    TransferFunction, zeros_poles_gain, zeros_poles_k, zero_frequency_gain, evaluate, s, proper, strictly_proper, pole_zero_cancellation, zpk_form,
+    TransferFunction, zeros_poles_gain, zeros_poles_k, zero_frequency_gain, evaluate, s, proper, strictly_proper, pole_zero_cancellation, zpk_form, order,
+    # special_tfs.jl
+    first_order_system, second_order_system, time_constant, damping_coefficient,
     # systems.jl
     characteristic_polynomial,
     # show.jl

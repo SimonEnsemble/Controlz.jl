@@ -275,3 +275,35 @@ function pole_zero_cancellation(tf::TransferFunction; verbose::Bool=false)
 
     return zeros_poles_k(zs[.! canceled_zeros], ps[.! canceled_poles], k, time_delay=tf.time_delay)
 end
+
+"""
+    o = order(tf::TransferFunction)
+
+return the order of the numerator and denominator of the transfer function `tf`.
+
+use [`pole_zero_cancellation`](@ref) first if you wish to cancel poles and zeros that are equal before determining the order.
+
+# returns
+`o::Tuple{Int, Int}`: (order of numerator, order of denominator)
+
+# examples
+```julia
+g = 1 / (s + 1)
+order(g) # (0, 1)
+
+g = (s + 1) / ((s + 2) * (s + 3))
+order(g) # (1, 2)
+```
+
+where `pole_zero_cancellation` is necessary:
+``julia
+g = (s + 1) / (s + 1) ^ 2
+order(g) # (1, 2)
+
+g = pole_zero_cancellation(g) # 1 / (s + 1)
+order(g) # (0, 1)
+```
+"""
+function order(tf::TransferFunction)
+    return (degree(tf.numerator), degree(tf.denominator))
+end

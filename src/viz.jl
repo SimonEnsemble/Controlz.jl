@@ -1,8 +1,8 @@
 using LaTeXStrings
 
 function draw_axes()
-    axvline(x=0, color="0.7", lw=2, zorder=1)
-    axhline(y=0, color="0.7", lw=2, zorder=1)
+    axvline(x=0, color="0.8", lw=2, zorder=1)
+    axhline(y=0, color="0.8", lw=2, zorder=1)
 end
 
 """
