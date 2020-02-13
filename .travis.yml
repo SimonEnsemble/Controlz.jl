@@ -43,6 +43,6 @@ jobs:
         - conda update -q conda
         - conda info -a
       script:
-        - julia --project=docs -e 'using Pkg; Pkg.instantiate(); Pkg.add(PackageSpec(path=pwd()))'
+        - julia --project=docs -e 'import Pkg; Pkg.add("Documenter")'
         - julia --project=docs --color=yes docs/make.jl
       after_success: skip
