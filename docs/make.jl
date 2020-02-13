@@ -1,3 +1,10 @@
+using Pkg;
+Pkg.activate(joinpath(@__DIR__, "..")); Pkg.instantiate()
+Pkg.activate(); Pkg.instantiate()
+
+pushfirst!(LOAD_PATH, joinpath(@__DIR__, ".."))
+# ^ above from Flux.jl to get this to work
+
 using Documenter
 using Controlz
 
@@ -20,6 +27,5 @@ deploydocs(
     repo = "github.com/SimonEnsemble/Controlz.jl.git",
     # This is a link to the main repo and the master branch
     # target = "build",
-    # versions sugggested by https://discourse.julialang.org/t/mkdocs-material-in-documenter/13764
-    deps = Deps.pip("mkdocs==0.17.5", "mkdocs-material==2.9.4", "pymdown-extensions") # These are dependencies for the site, not the package
+    deps = Deps.pip("mkdocs", "mkdocs-material", "pymdown-extensions") # These are dependencies for the site, not the package
 )
