@@ -3,10 +3,7 @@ repo_url:         https://github.com/SimonEnsemble/Controlz.jl
 site_description: Documentation for Controlz.jl
 site_author:      SimonEnsemble
 
-theme: cinder
-
-extra_css:
-  - assets/flux.css
+theme: united
 
 extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_HTML
@@ -26,9 +23,4 @@ markdown_extensions:
 extra:
   logo: assets/logo.png
 
-
 docs_dir: 'build'
-
-pages:
-  - Controlz: index.md
-  - Transfer Functions: tfs.md

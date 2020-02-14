@@ -19,13 +19,13 @@ makedocs(
              "Simulation" => "sim.md",
              "Visualization" => "viz.md",
              "Control systems" => "controls.md",
-             "FAQ" => "faq.md"],
-    format = Documenter.HTML(assets = ["assets/flux.css"])
+             "FAQ" => "faq.md"]
+ #     format = Documenter.HTML(assets = ["assets/flux.css"])
 )
 
 deploydocs(
     repo = "github.com/SimonEnsemble/Controlz.jl.git",
     # This is a link to the main repo and the master branch
     # target = "build",
-    deps = Deps.pip("mkdocs", "mkdocs-material", "pymdown-extensions") # These are dependencies for the site, not the package
+    deps = Deps.pip("mkdocs", "mkdocs-bootswatch", "pymdown-extensions") # These are dependencies for the site, not the package
 )
