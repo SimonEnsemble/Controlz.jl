@@ -8,13 +8,21 @@ end
 """
     viz_response(t, y, 
                  plot_title="", plot_xlabel="time, t", 
-                 plot_ylabel="output, y(t)")
+                 plot_ylabel="output, y(t)",
+                 savename=nothing)
 
 plot `y` vs. `t` to visualize the response of a system to an input. typically `t` and `y` are outputs of [`simulate`](@ref).
+
+note that PyPlot.jl (matplotlib) commands can be invoked after `viz_response` to make further changes to the figure panel.
+e.g. `xlim([0, 1])` can be applied after `viz_response`.
 
 # Arguments
 * `t::Array{Float64}`: array of times
 * `y::Array{Float64}`: array of values of response variables at the corresponding times in `t`
+* `plot_title::Union{String, LaTeXString}`: title of plot
+* `plot_xlabel::Union{String, LaTeXString}`: x-label
+* `plot_ylabel::Union{String, LaTeXString}`: y-label
+* `savename::Union{Nothing, String}`: filename to save as a figure in .png format (dpi 250).
 
 # Example
 ```
@@ -28,6 +36,7 @@ function viz_response(t::Array{Float64}, y::Array{Float64};
         plot_title::Union{String, LaTeXString}="", 
         plot_xlabel::Union{String, LaTeXString}=L"time, $t$",
         plot_ylabel::Union{String, LaTeXString}=L"output, $y(t)$",
+        savename::Union{Nothing, String}=nothing
     )
     
     figure()
@@ -37,6 +46,12 @@ function viz_response(t::Array{Float64}, y::Array{Float64};
     title(plot_title)
     draw_axes()
     tight_layout()
+    if ! isnothing(savename)
+        if ! contains(savename, ".png")
+            savename *= ".png"
+        end
+        savefig(savename, dpi=250, format="png")
+    end
     return nothing
 end
 
@@ -136,4 +151,16 @@ function bode_plot(g::TransferFunction; log10_ω_min::Float64=-4.0, log10_ω_max
     xlabel(L"frequency, $\omega$")
     tight_layout()
     return nothing
+end
+
+function mk_gif(t::Array{Float64}, y::Array{Float64}; 
+        plot_title::Union{String, LaTeXString}="", 
+        plot_xlabel::Union{String, LaTeXString}=L"time, $t$",
+        plot_ylabel::Union{String, LaTeXString}=L"output, $y(t)$",
+        savename::Union{Nothing, String}=nothing
+    )
+    for i = 2:length(t)
+        viz_response(t[1:i], y[1:i], plot_title=plot_title, plot_xlabel=plot_xlabel,
+            plot_ylabel=plot_ylabel, savename=@sprintf("__y_of_t_snapshot_%03d", i))
+    end
 end
