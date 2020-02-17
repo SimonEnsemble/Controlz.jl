@@ -173,7 +173,7 @@ easily construct:
 K = 1.0
 τ = 2.0
 ξ = 0.1
-g = first_order_system(K, τ, ξ) # 1 / (4 * s^2 + 0.4 * s + 1)
+g = second_order_system(K, τ, ξ) # 1 / (4 * s^2 + 0.4 * s + 1)
 ```
 
 compute time constant, damping coefficient:
