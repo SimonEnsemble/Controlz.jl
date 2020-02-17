@@ -47,7 +47,7 @@ function viz_response(t::Array{Float64}, y::Array{Float64};
     draw_axes()
     tight_layout()
     if ! isnothing(savename)
-        if ! contains(savename, ".png")
+        if ! occursin(".png", savename)
             savename *= ".png"
         end
         savefig(savename, dpi=250, format="png")
@@ -153,14 +153,53 @@ function bode_plot(g::TransferFunction; log10_ω_min::Float64=-4.0, log10_ω_max
     return nothing
 end
 
-function mk_gif(t::Array{Float64}, y::Array{Float64}; 
-        plot_title::Union{String, LaTeXString}="", 
+"""
+    mk_gif(t, y)
+
+make a .gif of the process response. 
+`t` and `y` are outputs of [`simulate`](@ref).
+accepts same arguments as [`viz_response`](@ref).
+ImageMagick must be installed to create the .gif.
+"""
+function mk_gif(t::Array{Float64}, y::Array{Float64};
+        plot_title::Union{String, LaTeXString}="",
         plot_xlabel::Union{String, LaTeXString}=L"time, $t$",
         plot_ylabel::Union{String, LaTeXString}=L"output, $y(t)$",
         savename::Union{Nothing, String}=nothing
     )
+    if length(t) > 999
+        error("too many points and thus images; reduce the number of points")
+    end
+
+    # let matplotlib determine x, y lims:
+    plot(t, y)
+    xmin, xmax, ymin, ymax = axis()
+    close()
+
+    step_to_image(i::Int) = @sprintf("__y_of_t_snapshot_%03d.png", i)
+
+    # same series of images
     for i = 2:length(t)
         viz_response(t[1:i], y[1:i], plot_title=plot_title, plot_xlabel=plot_xlabel,
-            plot_ylabel=plot_ylabel, savename=@sprintf("__y_of_t_snapshot_%03d", i))
+            plot_ylabel=plot_ylabel)
+        xlim([xmin, xmax])
+        ylim([ymin, ymax])
+        savefig(step_to_image(i), format="png", dpi=100)
+        close()
+    end
+
+    if isnothing(savename)
+        savename = "reponse"
+    end
+    try
+        run(`convert -delay 20 -loop 0 __y_of_t_snapshot_*.png $savename.gif`)
+        @info "see " * savename * ".gif"
+    catch
+        @warning "You must install ImageMagick for `convert` to run. Exiting..."
+    end
+
+    # clean up
+    for i = 2:length(t)
+        rm(step_to_image(i))
     end
 end
