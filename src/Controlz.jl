@@ -28,7 +28,7 @@ export
     # sim.jl
     simulate, interpolate,
     # viz.jl
-    viz_response, viz_poles_and_zeros, nyquist_diagram, root_locus, bode_plot,
+    viz_response, viz_poles_and_zeros, nyquist_diagram, root_locus, bode_plot, mk_gif,
     # controlz.jl
     PController, PIController, PIDController
 end
