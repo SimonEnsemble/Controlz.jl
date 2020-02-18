@@ -66,4 +66,5 @@ PyPlot.matplotlib.style.use(normpath(joinpath(pathof(Controlz), "..", "hipster.m
     nyquist_diagram
     bode_plot
     root_locus
+    mk_gif
 ```

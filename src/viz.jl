@@ -45,8 +45,8 @@ function viz_response(t::Array{Float64}, y::Array{Float64};
     ylabel(plot_ylabel)
     title(plot_title)
     draw_axes()
-    tight_layout()
     if ! isnothing(savename)
+        tight_layout()
         if ! occursin(".png", savename)
             savename *= ".png"
         end
@@ -153,19 +153,30 @@ function bode_plot(g::TransferFunction; log10_ω_min::Float64=-4.0, log10_ω_max
     return nothing
 end
 
-"""
-    mk_gif(t, y)
+@doc raw"""
+    mk_gif(t, y, plot_title="", plot_xlabel="time, t", 
+                 plot_ylabel="output, y(t)",
+                 savename="response")
 
-make a .gif of the process response. 
+make a .gif of the process response.
 `t` and `y` are outputs of [`simulate`](@ref).
 accepts same arguments as [`viz_response`](@ref).
 ImageMagick must be installed to create the .gif.
+the .gif is saved as a file `savename`.
+
+# Arguments
+* `t::Array{Float64}`: array of times
+* `y::Array{Float64}`: array of values of response variables at the corresponding times in `t`
+* `plot_title::Union{String, LaTeXString}`: title of plot
+* `plot_xlabel::Union{String, LaTeXString}`: x-label
+* `plot_ylabel::Union{String, LaTeXString}`: y-label
+* `savename::String`: filename to save as a .gif. .gif extension automatically appended if not provided.
 """
 function mk_gif(t::Array{Float64}, y::Array{Float64};
         plot_title::Union{String, LaTeXString}="",
         plot_xlabel::Union{String, LaTeXString}=L"time, $t$",
         plot_ylabel::Union{String, LaTeXString}=L"output, $y(t)$",
-        savename::Union{Nothing, String}=nothing
+        savename::String="response.gif"
     )
     if length(t) > 999
         error("too many points and thus images; reduce the number of points")
@@ -175,27 +186,29 @@ function mk_gif(t::Array{Float64}, y::Array{Float64};
     plot(t, y)
     xmin, xmax, ymin, ymax = axis()
     close()
-
+    
+    # name to save image i as.
     step_to_image(i::Int) = @sprintf("__y_of_t_snapshot_%03d.png", i)
 
-    # same series of images
+    # save series of images
     for i = 2:length(t)
         viz_response(t[1:i], y[1:i], plot_title=plot_title, plot_xlabel=plot_xlabel,
             plot_ylabel=plot_ylabel)
         xlim([xmin, xmax])
         ylim([ymin, ymax])
+        tight_layout()
         savefig(step_to_image(i), format="png", dpi=100)
         close()
     end
-
-    if isnothing(savename)
-        savename = "reponse"
+    
+    if ! occursin(".gif", savename)
+        savename *= ".gif"
     end
     try
-        run(`convert -delay 20 -loop 0 __y_of_t_snapshot_*.png $savename.gif`)
-        @info "see " * savename * ".gif"
+        run(`convert -delay 20 -loop 0 __y_of_t_snapshot_\*.png $savename`)
+        @info "see " * savename
     catch
-        @warning "You must install ImageMagick for `convert` to run. Exiting..."
+        @warn "You must install ImageMagick for `convert` to run. Exiting..."
     end
 
     # clean up
