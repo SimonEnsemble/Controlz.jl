@@ -1,7 +1,7 @@
 name = "Controlz"
 uuid = "e034abe6-471a-4d54-96dd-ecd1f4022419"
 authors = ["SimonEnsemble <cory.simon@oregonstate.edu>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
