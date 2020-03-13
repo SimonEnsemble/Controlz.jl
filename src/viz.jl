@@ -131,9 +131,10 @@ function root_locus(g_ol::TransferFunction)
 end
 
 """
-    bode_plot(tf, log10_ω_min=-4.0, log10_ω_max=4.0)
+    ax1, ax2 = bode_plot(tf, log10_ω_min=-4.0, log10_ω_max=4.0)
 
 draw the Bode plot of a transfer function `tf` to visualize its frequency response.
+returns the two axes of the plot for further tuning via `matplotlib` commands.
 """
 function bode_plot(g::TransferFunction; log10_ω_min::Float64=-4.0, log10_ω_max::Float64=4.0)
     ω = 10.0 .^ range(log10_ω_min, log10_ω_max, length=300)
@@ -146,11 +147,12 @@ function bode_plot(g::TransferFunction; log10_ω_min::Float64=-4.0, log10_ω_max
     ax1.set_xscale("log")
     ax1.set_yscale("log")
     ax2.set_xscale("log")
-    ax2.plot(ω, angle.(g_iω), color="C1")
+    ax2.plot(ω, angle.(g_iω) / π, color="C1")
+    ax2.yaxis.set_major_formatter(PyPlot.matplotlib.ticker.FormatStrFormatter(L"%g$\pi$"))
     ax2.set_ylabel(L"$\angle g(i\omega)$")
     xlabel(L"frequency, $\omega$")
     tight_layout()
-    return nothing
+    return ax1, ax2
 end
 
 @doc raw"""
