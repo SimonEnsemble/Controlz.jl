@@ -76,11 +76,11 @@ function viz_poles_and_zeros(tf::TransferFunction)
 end
 
 """
-    nyquist_diagram(tf)
+    nyquist_diagram(tf, nb_pts=500)
 
-plot the Nyquist diagram for a transfer function `tf` to visualize its frequency response.
+plot the Nyquist diagram for a transfer function `tf` to visualize its frequency response. `s=-1` is plotted as a red `+`. `nb_pts` changes the resolution.
 """
-function nyquist_diagram(tf::TransferFunction; nb_pts::Int=300)
+function nyquist_diagram(tf::TransferFunction; nb_pts::Int=500)
     ω = range(-10.0, 10.0, length=nb_pts)
 
     g_iω = [evaluate(tf, ω_i * im) for ω_i in ω]
@@ -88,11 +88,12 @@ function nyquist_diagram(tf::TransferFunction; nb_pts::Int=300)
     figure()
     plot(real(g_iω), imag(g_iω), zorder=100)
     draw_axes()
+    # plot -1
+    plot([-1], [0], marker="+", color="r", zorder=1000)
     xlabel("Re[G(iω)]")
     ylabel("Im[G(iω)]")
     title("Nyquist diagram")
     tight_layout()
-    return nothing
 end
 
 """
