@@ -96,38 +96,74 @@ function nyquist_diagram(tf::TransferFunction; nb_pts::Int=300)
 end
 
 """
-    root_locus(g_ol)
+    root_locus(g_ol, max_mag_Kc=10.0, nb_pts=500)
 
 visualize the root locus plot of an open-loop transfer function `g_ol`.
+
+# Arguments
+* `g_ol::TransferFunction`: the open-loop transfer function of the closed loop system
+* `max_mag_Kc::Float64=10.0`: the maximum magnitude by which the gain of `g_ol` is 
+    scaled in order to see the roots traversing the plane
+* `nb_pts::Int=500`: the number of gains to explore. increase for higher resolution.
 """
-function root_locus(g_ol::TransferFunction)
+function root_locus(g_ol::TransferFunction;
+        max_mag_Kc::Float64=10.0, nb_pts::Int=500)
+    # compute zeros, poles, and gain of open loop transfer function
     z, p, k = zeros_poles_k(g_ol)
 
-    # keep gain of G_ol(s) +ve, scale with gain K
-    Kcs = k * 10.0 .^ range(-6, 2, length=500)
+    # decide set of controller gains to explore
+    #   make sure Kc is the same sign as gain of G_OL
+    #   so G_OL has positive gain
+    Kcs = k * 10.0 .^ range(-6, log(max_mag_Kc), length=nb_pts)
     pushfirst!(Kcs, 0.0)
 
+    # store roots of characteristic eqn. here as Kc varies
     rloc = zeros(Complex, length(Kcs), length(p))
+    fill!(rloc, NaN)
 
-    for (i_k, Kc) in enumerate(Kcs)
-        c_poly = characteristic_polynomial(Kc * g_ol)
+    # roots of 1 + G_OL when Kc = 0 are poles of G_OL
+    rloc[1, :] = p
+
+    # loop thru controller gains, compute roots of 1 + G_OL(s) = 0
+    for i = 2:length(Kcs)
+        # compute characteristic polynomial 1 + Kc * G_OL(s)
+        c_poly = characteristic_polynomial(Kcs[i] * g_ol)
+        # compute roots of characteristic polynomial
         roots_c_poly = roots(c_poly)
+        # store roots
+        entry_filled = [false for _ = 1:length(p)]
         for i_p = 1:length(roots_c_poly)
-            rloc[i_k, i_p] = roots_c_poly[i_p]
+            ### find closest previous root
+            # first, compute distances from each
+            distance_to_previous_roots = abs.(rloc[i-1, :] .- roots_c_poly[i_p])
+            distance_to_previous_roots[entry_filled] .= Inf
+            # get closest
+            id_closest_root = argmin(distance_to_previous_roots)
+            entry_filled[id_closest_root] = true
+            # store root in this entry
+            rloc[i, id_closest_root] = roots_c_poly[i_p]
         end
     end
 
     figure()
+    # plot poles; corresponds to Kc = 0
+    scatter(real.(p), imag.(p), marker="x", label="poles",
+            color="k", s=50, zorder=100)
+    # plot zeros; corresponds to |Kc| → ∞
+    if length(z) > 0
+        scatter(real.(z), imag.(z), marker="o", label="poles",
+                color="k", s=50, zorder=100, facecolor="None")
+    end
+    # plot roots traversing plane
     for i = 1:length(p)
-        plot(real.(rloc[:, i]), imag.(rloc[:, i]), zorder=100, color="C$(i-1)")
-        scatter(real.([p[i]]), imag.([p[i]]), marker="x", label="poles", color="C$(i-1)", s=50, zorder=100)
+        plot(real.(rloc[:, i]), imag.(rloc[:, i]),
+            zorder=100, color="C$(i-1)")
     end
     xlabel("Re")
     ylabel("Im")
     draw_axes()
     title("root locus")
     tight_layout()
-    return nothing
 end
 
 """
