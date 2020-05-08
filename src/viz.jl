@@ -76,20 +76,23 @@ function viz_poles_and_zeros(tf::TransferFunction)
 end
 
 """
-    nyquist_diagram(tf, nb_pts=500)
+    nyquist_diagram(tf, nb_pts=500, ω_max=10.0)
 
-plot the Nyquist diagram for a transfer function `tf` to visualize its frequency response. `s=-1` is plotted as a red `+`. `nb_pts` changes the resolution.
+plot the Nyquist diagram for a transfer function `tf` to visualize its frequency response. `s=-1` is plotted as a red `+`. `nb_pts` changes the resolution. `ω_max` gives maximum frequency considered.
 """
-function nyquist_diagram(tf::TransferFunction; nb_pts::Int=500)
-    ω = range(-10.0, 10.0, length=nb_pts)
+function nyquist_diagram(tf::TransferFunction; nb_pts::Int=500, ω_max::Float64=10.0)
+    ω_neg = range(-ω_max, 0.0, length=nb_pts)
+    ω_pos = range(0.0, ω_max, length=nb_pts)
 
-    g_iω = [evaluate(tf, ω_i * im) for ω_i in ω]
+    g_iω_neg = [evaluate(tf, ω_i * im) for ω_i in ω_neg]
+    g_iω_pos = [evaluate(tf, ω_i * im) for ω_i in ω_pos]
 
     figure()
-    plot(real(g_iω), imag(g_iω), zorder=100)
+    plot(real(g_iω_neg), imag(g_iω_neg), zorder=100)
+    plot(real(g_iω_pos), imag(g_iω_pos), zorder=100)
     draw_axes()
     # plot -1
-    plot([-1], [0], marker="+", color="r", zorder=1000)
+    plot([-1], [0], marker="+", color="r", zorder=1000, markersize=15)
     xlabel("Re[G(iω)]")
     ylabel("Im[G(iω)]")
     title("Nyquist diagram")
@@ -168,7 +171,7 @@ function root_locus(g_ol::TransferFunction;
 end
 
 """
-    ax1, ax2 = bode_plot(tf, log10_ω_min=-4.0, log10_ω_max=4.0)
+    axs = bode_plot(tf, log10_ω_min=-4.0, log10_ω_max=4.0)
 
 draw the Bode plot of a transfer function `tf` to visualize its frequency response.
 returns the two axes of the plot for further tuning via `matplotlib` commands.
@@ -176,20 +179,29 @@ returns the two axes of the plot for further tuning via `matplotlib` commands.
 function bode_plot(g::TransferFunction; log10_ω_min::Float64=-4.0, log10_ω_max::Float64=4.0)
     ω = 10.0 .^ range(log10_ω_min, log10_ω_max, length=300)
     g_iω = [evaluate(g, im * ω_i) for ω_i in ω]
+    ∠g_iω = angle.(g_iω) / π
+    while any(∠g_iω .> 0.0)
+        i = findfirst(∠g_iω .> 0.0)
+        ∠g_iω[i:end] .-= 2.0
+    end
 
-    fig, (ax1, ax2) = subplots(2, 1, sharex=true, figsize=(8, 7))
-    ax1.plot(ω, abs.(g_iω))
-    ax1.set_ylabel(L"$|g(i\omega)|$")
-    ax1.set_title("Bode plot")
-    ax1.set_xscale("log")
-    ax1.set_yscale("log")
-    ax2.set_xscale("log")
-    ax2.plot(ω, angle.(g_iω) / π, color="C1")
-    ax2.yaxis.set_major_formatter(PyPlot.matplotlib.ticker.FormatStrFormatter(L"%g$\pi$"))
-    ax2.set_ylabel(L"$\angle g(i\omega)$")
+    fig, axs = subplots(2, 1, sharex=true, figsize=(8, 7))
+    axs[1].plot(ω, abs.(g_iω))
+    axs[1].set_ylabel(L"$|g(i\omega)|$")
+    axs[1].set_title("Bode plot")
+    axs[1].set_xscale("log")
+    axs[1].set_yscale("log")
+    axs[2].set_xscale("log")
+    axs[2].plot(ω, ∠g_iω, color="C1")
+    axs[2].yaxis.set_major_formatter(PyPlot.matplotlib.ticker.FormatStrFormatter(L"%g$\pi$"))
+    axs[2].set_ylabel(L"$\angle g(i\omega)$")
+    for ax in axs
+        ax.minorticks_on()
+        ax.grid(b=true, which="minor", alpha=0.25)
+    end
     xlabel(L"frequency, $\omega$")
     tight_layout()
-    return ax1, ax2
+    return axs
 end
 
 @doc raw"""
