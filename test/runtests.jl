@@ -405,3 +405,12 @@ end
     @test isapprox(TransferFunction(PIDController(1.3, 2.0, 0.0)), 1.3 * (1+1/(2*s)))
     @test isapprox(TransferFunction(PIDController(1.3, 2.0, 0.1)), 1.3 * (1+1/(2*s) + 0.1*s))
 end
+
+@testset "testing margins" begin
+    g_ol = 2 * exp(-s) / (5 * s + 1)
+    m = gain_phase_margins(g_ol)
+    @test isapprox(m.ω_c, 1.6887, atol=0.0001)
+    @test isapprox(m.ω_g, 0.3464, atol=0.0001)
+    @test isapprox(m.gain_margin, 4.2512, atol=0.0001)
+    @test isapprox(m.phase_margin, 100.1535 / 180 * π, atol=0.0001)
+end
