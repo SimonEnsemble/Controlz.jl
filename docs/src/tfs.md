@@ -144,6 +144,27 @@ g = pole_zero_cancellation(g)
 order(g) # (0, 2)
 ```
 
+## frequency response of an open-loop transfer function
+
+![](g_ol.png)
+
+compute the critical frequency, gain crossover frequency, gain margin, and phase margin of a closed loop control system with open-loop transfer function `g_ol` with `gain_phase_margins`. for example, consider:
+
+$$g_{ol}(s)=\dfrac{2e^{-s}}{5s+1}$$
+
+```julia
+g_ol = 2 * exp(-s) / (5 * s + 1)
+
+margins = gain_phase_margins(g_ol)
+
+margins.ω_c # critical freq. (radians / time)
+margins.ω_g # gain crossover freq. (radians / time)
+margins.gain_margin # gain margin
+margins.phase_margin # phase margin (radians)
+```
+
+
+
 ## special transfer functions
 
 ### (0, 1) order transfer functions
@@ -201,4 +222,5 @@ g = 1.0 / (8 * s^2 + 0.8 * s + 2)
     second_order_system
     time_constant
     damping_coefficient
+    gain_phase_margins
 ```

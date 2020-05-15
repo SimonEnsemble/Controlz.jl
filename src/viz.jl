@@ -26,10 +26,10 @@ e.g. `xlim([0, 1])` can be applied after `viz_response`.
 
 # Example
 ```
-julia> g = 4 / (4 * s ^ 2 + 0.8 * s + 1)
-julia> u = 1 / s
-julia> t, y = simulate(g * u, (0.0, 50.0))
-julia> viz_response(t, y)
+g = 4 / (4 * s ^ 2 + 0.8 * s + 1)
+u = 1 / s
+t, y = simulate(g * u, (0.0, 50.0))
+viz_response(t, y)
 ```
 """
 function viz_response(t::Array{Float64}, y::Array{Float64}; 
@@ -179,20 +179,26 @@ returns the two axes of the plot for further tuning via `matplotlib` commands.
 function bode_plot(g::TransferFunction; log10_ω_min::Float64=-4.0, log10_ω_max::Float64=4.0)
     ω = 10.0 .^ range(log10_ω_min, log10_ω_max, length=300)
     g_iω = [evaluate(g, im * ω_i) for ω_i in ω]
-    ∠g_iω = angle.(g_iω) / π
-    while any(∠g_iω .> 0.0)
-        i = findfirst(∠g_iω .> 0.0)
-        ∠g_iω[i:end] .-= 2.0
+    ∠g_iω = zeros(length(g_iω))
+
+    circle_counter = 0
+    ∠g_iω[1] = angle(g_iω[1])
+    for i = 2:length(g_iω)
+        ∠g_iω[i] = angle(g_iω[i]) - circle_counter * 2 * π
+        if ∠g_iω[i] - ∠g_iω[i-1] > π
+            ∠g_iω[i] -= 2 * π
+            circle_counter += 1
+        end
     end
 
     fig, axs = subplots(2, 1, sharex=true, figsize=(8, 7))
-    axs[1].plot(ω, abs.(g_iω))
+    axs[1].plot(ω, abs.(g_iω), color="C1")
     axs[1].set_ylabel(L"$|g(i\omega)|$")
     axs[1].set_title("Bode plot")
     axs[1].set_xscale("log")
     axs[1].set_yscale("log")
     axs[2].set_xscale("log")
-    axs[2].plot(ω, ∠g_iω, color="C1")
+    axs[2].plot(ω, ∠g_iω / π, color="C1")
     axs[2].yaxis.set_major_formatter(PyPlot.matplotlib.ticker.FormatStrFormatter(L"%g$\pi$"))
     axs[2].set_ylabel(L"$\angle g(i\omega)$")
     for ax in axs

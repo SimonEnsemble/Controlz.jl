@@ -16,8 +16,8 @@ include("systems.jl")
 include("sim.jl")
 include("viz.jl")
 include("controls.jl")
-include("show.jl")
 include("margins.jl")
+include("show.jl")
 
 export
     # tf.jl

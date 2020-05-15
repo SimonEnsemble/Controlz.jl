@@ -39,16 +39,7 @@ bode_plot(g, log10_ω_min=-4.0, log10_ω_max=4.0)
 
 ![](example_bode.png)
 
-compute the critical frequency, gain crossover frequency, gain margin, and phase margin of a closed loop control system with open-loop transfer function `g_ol` as follows:
-
-```julia
-g_ol = 2 * exp(-s) / (5 * s + 1)
-margins = gain_phase_margins(g_ol)
-margins.ω_c # critical freq. (radians / time)
-margins.ω_g # gain crossover freq. (radians / time)
-margins.gain_margin # gain margin
-margins.phase_margin # phase margin (radians)
-```
+see [`gain_phase_margins`](@ref) to compute the gain and phase margins and the critical and gain crossover frequencies.
 
 ## Root locus plot
 

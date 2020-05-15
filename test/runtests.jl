@@ -413,4 +413,11 @@ end
     @test isapprox(m.ω_g, 0.3464, atol=0.0001)
     @test isapprox(m.gain_margin, 4.2512, atol=0.0001)
     @test isapprox(m.phase_margin, 100.1535 / 180 * π, atol=0.0001)
+
+    g_ol = TransferFunction([0.25], [1.0, 2, 1, 1])
+    m = gain_phase_margins(g_ol)
+    @test isapprox(m.ω_c, 1.0, atol=0.0001)
+    @test isnan(m.ω_g)
+    @test isapprox(m.gain_margin, 4.0, atol=0.0001)
+    @test isnan(m.phase_margin)
 end

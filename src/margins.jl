@@ -18,19 +18,41 @@ closed loop transfer function `g_ol::TransferFunction`.
 
 # Example
 ```
-julia> g_ol = 2 * exp(-s) / (5 * s + 1)
-julia> margins = gain_phase_margins(g_ol)
-julia> margins.ω_c # critical freq. (radians / time)
-julia> margins.ω_g # gain crossover freq. (radians / time)
-julia> margins.gain_margin # gain margin
-julia> margins.phase_margin # phase margin (radians)
+g_ol = 2 * exp(-s) / (5 * s + 1)
+margins = gain_phase_margins(g_ol)
+margins.ω_c # critical freq. (radians / time)
+margins.ω_g # gain crossover freq. (radians / time)
+margins.gain_margin # gain margin
+margins.phase_margin # phase margin (radians)
 ```
 """
 function gain_phase_margins(g_ol::TransferFunction)
     # ∠ G(i ω_c) = -π
-    ω_c = fzero(ω -> angle(evaluate(g_ol, im * ω)) + π, 0.001)
+    ω_c = NaN
+    try
+        ω_c = fzero(ω -> angle(evaluate(g_ol, im * ω)) + π, 0.0001)
+        # sometimes happens that ω_c is huge and not actually a zero.
+        if ! isapprox(angle(evaluate(g_ol, im * ω_c)), -π, atol=0.01)
+            ω_c = NaN
+        end
+    catch da_error
+        if isa(da_error, Roots.ConvergenceFailed)
+            ω_c = NaN
+        else
+            error("something went wrong when computing ω_c")
+        end
+    end
     # | G(i ω_g) | = 1
-    ω_g = fzero(ω -> abs(evaluate(g_ol, im * ω)) - 1.0, 0.001)
+    ω_g = NaN
+    try
+        ω_g = fzero(ω -> abs(evaluate(g_ol, im * ω)) - 1.0, 0.001)
+    catch da_error
+        if isa(da_error, Roots.ConvergenceFailed)
+            ω_g = NaN
+        else
+            error("something went wrong when computing ω_g")
+        end
+    end
     # gain margin = 1 / | G(i ω_c) |
     gm = 1 / abs(evaluate(g_ol, im * ω_c))
     # phase margin = ∠ G(i ω_g) + π

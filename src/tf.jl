@@ -14,7 +14,7 @@ G(s) = \frac{4e^{-2.2s}}{2s+1}
 ```
 
 ```
-julia> tf = TransferFunction([4], [2, 1], 2.2)
+tf = TransferFunction([4], [2, 1], 2.2)
 ```
 
 # Attributes
@@ -64,7 +64,7 @@ end
 Conveniently create a time delay by exp(- θ * s).
 
 # Example
-julia> g = 1 / (s + 1) * exp(-2.0 * s) # introduce time delay of 2.0
+g = 1 / (s + 1) * exp(-2.0 * s) # introduce time delay of 2.0
 """
 function exp(tf::TransferFunction)
     # if numerator is zero, then the value is 1.0 and no time delay is introduced
@@ -116,8 +116,8 @@ this is achieved by multiplying by 1.0 in a fancy way such that the highest powe
 # Example
 
 ```julia
-julia> g = 8.0 / (2 * s^2 + 3 * s + 4)
-julia> g_zpk = zpk_form(g) # 4 / (s^2 + 1.5 s + 2)
+g = 8.0 / (2 * s^2 + 3 * s + 4)
+g_zpk = zpk_form(g) # 4 / (s^2 + 1.5 s + 2)
 ```
 """
 function zpk_form(tf::TransferFunction)
@@ -208,9 +208,9 @@ Evaluate a `TransferFunction`, `tf`, at a particular number `z`.
 
 # Examples
 ```
-julia> tf = TransferFunction([1], [3, 1])
-julia> evaluate(tf, 1.0) # 0.25
-julia> evaluate(tf, 2.0 + 3.0im) # also takes imaginary numbers as input
+tf = TransferFunction([1], [3, 1])
+evaluate(tf, 1.0) # 0.25
+evaluate(tf, 2.0 + 3.0im) # also takes imaginary numbers as input
 ```
 """
 function evaluate(tf::TransferFunction, z::Number)
@@ -244,8 +244,8 @@ This is achieved by comparing the poles and zeros with `isapprox`.
 
 # Example
 ```
-julia> tf = s * (s - 1) / (s * (s + 1))
-julia> pole_zero_cancellation(tf) # (s-1)/(s+1)
+tf = s * (s - 1) / (s * (s + 1))
+pole_zero_cancellation(tf) # (s-1)/(s+1)
 ```
 """
 function pole_zero_cancellation(tf::TransferFunction; verbose::Bool=false)

@@ -72,10 +72,10 @@ Two time points preceding $t=0$ are included to illustrate that it is assumed $y
 One can simulate the first order step response as, given the Laplace transform of the output, `Y`:
 
 ```
-julia> g = 4 / (3 * s + 1) # first-order transfer function
-julia> U = 1 / s #  unit step input
-julia> Y = g / s # output
-julia> t, y = simulate(Y, 12.0)
+g = 4 / (3 * s + 1) # first-order transfer function
+U = 1 / s #  unit step input
+Y = g / s # output
+t, y = simulate(Y, 12.0)
 ```
 """
 function simulate(Y::TransferFunction, final_time::Float64; nb_time_points::Int=100)
@@ -131,10 +131,10 @@ an error is thrown if `maximum(t) < t̃ < minimum(t)` (extrapolation) or if the 
 the unit step response of a first-order process with time constant $\tau$ is $\approx63\%$ of the final value when $t=\tau$.
 
 ```julia
-julia> τ = 3.45
-julia> g = 1 / (τ * s + 1) # FO system
-julia> t, y = simulate(g / s, 10.0) # unit step response
-julia> y_at_τ = interpolate(t, y, τ) # 0.63
+τ = 3.45
+g = 1 / (τ * s + 1) # FO system
+t, y = simulate(g / s, 10.0) # unit step response
+y_at_τ = interpolate(t, y, τ) # 0.63
 ```
 """
 function interpolate(t::Array{Float64, 1}, y::Array{Float64, 1}, t̃::Float64)
