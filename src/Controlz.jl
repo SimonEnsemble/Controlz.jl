@@ -5,6 +5,7 @@ using DifferentialEquations
 using PyPlot
 using Interpolations
 using Printf
+using Roots
 
 # hipster plot theme
 PyPlot.matplotlib.style.use(normpath(joinpath(pathof(Controlz), "..", "hipster.mplstyle")))
@@ -15,6 +16,7 @@ include("systems.jl")
 include("sim.jl")
 include("viz.jl")
 include("controls.jl")
+include("margins.jl")
 include("show.jl")
 
 export
@@ -30,5 +32,7 @@ export
     # viz.jl
     viz_response, viz_poles_and_zeros, nyquist_diagram, root_locus, bode_plot, mk_gif,
     # controlz.jl
-    PController, PIController, PIDController
+    PController, PIController, PIDController,
+    # margins.jl
+    gain_phase_margins
 end

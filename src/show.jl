@@ -71,3 +71,11 @@ function Base.show(io::IO, pidc::PIDController)
     println(io, "\tderivative time constant τD = ", pidc.τD)
     println(io, "\tderivative filter α = ", pidc.α)
 end
+
+function Base.show(io::IO, m::Margins)
+    println(io, "-- gain/phase margin info--")
+    @printf(io, "\tcritical frequency ω_c [rad/time]:       %.5f\n", m.ω_c)
+    @printf(io, "\tgain crossover frequency ω_g [rad/time]: %.5f\n", m.ω_g)
+    @printf(io, "\tgain margin:                             %.5f\n", m.gain_margin)
+    @printf(io, "\tphase margin:                            %.5f\n", m.phase_margin)
+end

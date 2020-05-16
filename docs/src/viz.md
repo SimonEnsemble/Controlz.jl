@@ -39,6 +39,8 @@ bode_plot(g, log10_ω_min=-4.0, log10_ω_max=4.0)
 
 ![](example_bode.png)
 
+see [`gain_phase_margins`](@ref) to compute the gain and phase margins and the critical and gain crossover frequencies.
+
 ## Root locus plot
 
 ```

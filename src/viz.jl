@@ -26,10 +26,10 @@ e.g. `xlim([0, 1])` can be applied after `viz_response`.
 
 # Example
 ```
-julia> g = 4 / (4 * s ^ 2 + 0.8 * s + 1)
-julia> u = 1 / s
-julia> t, y = simulate(g * u, (0.0, 50.0))
-julia> viz_response(t, y)
+g = 4 / (4 * s ^ 2 + 0.8 * s + 1)
+u = 1 / s
+t, y = simulate(g * u, (0.0, 50.0))
+viz_response(t, y)
 ```
 """
 function viz_response(t::Array{Float64}, y::Array{Float64}; 
@@ -76,62 +76,102 @@ function viz_poles_and_zeros(tf::TransferFunction)
 end
 
 """
-    nyquist_diagram(tf)
+    nyquist_diagram(tf, nb_pts=500, ω_max=10.0)
 
-plot the Nyquist diagram for a transfer function `tf` to visualize its frequency response.
+plot the Nyquist diagram for a transfer function `tf` to visualize its frequency response. `s=-1` is plotted as a red `+`. `nb_pts` changes the resolution. `ω_max` gives maximum frequency considered.
 """
-function nyquist_diagram(tf::TransferFunction; nb_pts::Int=300)
-    ω = range(-10.0, 10.0, length=nb_pts)
+function nyquist_diagram(tf::TransferFunction; nb_pts::Int=500, ω_max::Float64=10.0)
+    ω_neg = range(-ω_max, 0.0, length=nb_pts)
+    ω_pos = range(0.0, ω_max, length=nb_pts)
 
-    g_iω = [evaluate(tf, ω_i * im) for ω_i in ω]
+    g_iω_neg = [evaluate(tf, ω_i * im) for ω_i in ω_neg]
+    g_iω_pos = [evaluate(tf, ω_i * im) for ω_i in ω_pos]
 
     figure()
-    plot(real(g_iω), imag(g_iω), zorder=100)
+    plot(real(g_iω_neg), imag(g_iω_neg), zorder=100)
+    plot(real(g_iω_pos), imag(g_iω_pos), zorder=100)
     draw_axes()
+    # plot -1
+    plot([-1], [0], marker="+", color="r", zorder=1000, markersize=15)
     xlabel("Re[G(iω)]")
     ylabel("Im[G(iω)]")
     title("Nyquist diagram")
     tight_layout()
-    return nothing
 end
 
 """
-    root_locus(g_ol)
+    root_locus(g_ol, max_mag_Kc=10.0, nb_pts=500)
 
 visualize the root locus plot of an open-loop transfer function `g_ol`.
+
+# Arguments
+* `g_ol::TransferFunction`: the open-loop transfer function of the closed loop system
+* `max_mag_Kc::Float64=10.0`: the maximum magnitude by which the gain of `g_ol` is 
+    scaled in order to see the roots traversing the plane
+* `nb_pts::Int=500`: the number of gains to explore. increase for higher resolution.
 """
-function root_locus(g_ol::TransferFunction)
+function root_locus(g_ol::TransferFunction;
+        max_mag_Kc::Float64=10.0, nb_pts::Int=500)
+    # compute zeros, poles, and gain of open loop transfer function
     z, p, k = zeros_poles_k(g_ol)
 
-    # keep gain of G_ol(s) +ve, scale with gain K
-    Kcs = k * 10.0 .^ range(-6, 2, length=500)
+    # decide set of controller gains to explore
+    #   make sure Kc is the same sign as gain of G_OL
+    #   so G_OL has positive gain
+    Kcs = k * 10.0 .^ range(-6, log(max_mag_Kc), length=nb_pts)
     pushfirst!(Kcs, 0.0)
 
+    # store roots of characteristic eqn. here as Kc varies
     rloc = zeros(Complex, length(Kcs), length(p))
+    fill!(rloc, NaN)
 
-    for (i_k, Kc) in enumerate(Kcs)
-        c_poly = characteristic_polynomial(Kc * g_ol)
+    # roots of 1 + G_OL when Kc = 0 are poles of G_OL
+    rloc[1, :] = p
+
+    # loop thru controller gains, compute roots of 1 + G_OL(s) = 0
+    for i = 2:length(Kcs)
+        # compute characteristic polynomial 1 + Kc * G_OL(s)
+        c_poly = characteristic_polynomial(Kcs[i] * g_ol)
+        # compute roots of characteristic polynomial
         roots_c_poly = roots(c_poly)
+        # store roots
+        entry_filled = [false for _ = 1:length(p)]
         for i_p = 1:length(roots_c_poly)
-            rloc[i_k, i_p] = roots_c_poly[i_p]
+            ### find closest previous root
+            # first, compute distances from each
+            distance_to_previous_roots = abs.(rloc[i-1, :] .- roots_c_poly[i_p])
+            distance_to_previous_roots[entry_filled] .= Inf
+            # get closest
+            id_closest_root = argmin(distance_to_previous_roots)
+            entry_filled[id_closest_root] = true
+            # store root in this entry
+            rloc[i, id_closest_root] = roots_c_poly[i_p]
         end
     end
 
     figure()
+    # plot poles; corresponds to Kc = 0
+    scatter(real.(p), imag.(p), marker="x", label="poles",
+            color="k", s=50, zorder=100)
+    # plot zeros; corresponds to |Kc| → ∞
+    if length(z) > 0
+        scatter(real.(z), imag.(z), marker="o", label="poles",
+                color="k", s=50, zorder=100, facecolor="None")
+    end
+    # plot roots traversing plane
     for i = 1:length(p)
-        plot(real.(rloc[:, i]), imag.(rloc[:, i]), zorder=100, color="C$(i-1)")
-        scatter(real.([p[i]]), imag.([p[i]]), marker="x", label="poles", color="C$(i-1)", s=50, zorder=100)
+        plot(real.(rloc[:, i]), imag.(rloc[:, i]),
+            zorder=100, color="C$(i-1)")
     end
     xlabel("Re")
     ylabel("Im")
     draw_axes()
     title("root locus")
     tight_layout()
-    return nothing
 end
 
 """
-    ax1, ax2 = bode_plot(tf, log10_ω_min=-4.0, log10_ω_max=4.0)
+    axs = bode_plot(tf, log10_ω_min=-4.0, log10_ω_max=4.0)
 
 draw the Bode plot of a transfer function `tf` to visualize its frequency response.
 returns the two axes of the plot for further tuning via `matplotlib` commands.
@@ -139,20 +179,35 @@ returns the two axes of the plot for further tuning via `matplotlib` commands.
 function bode_plot(g::TransferFunction; log10_ω_min::Float64=-4.0, log10_ω_max::Float64=4.0)
     ω = 10.0 .^ range(log10_ω_min, log10_ω_max, length=300)
     g_iω = [evaluate(g, im * ω_i) for ω_i in ω]
+    ∠g_iω = zeros(length(g_iω))
 
-    fig, (ax1, ax2) = subplots(2, 1, sharex=true, figsize=(8, 7))
-    ax1.plot(ω, abs.(g_iω))
-    ax1.set_ylabel(L"$|g(i\omega)|$")
-    ax1.set_title("Bode plot")
-    ax1.set_xscale("log")
-    ax1.set_yscale("log")
-    ax2.set_xscale("log")
-    ax2.plot(ω, angle.(g_iω) / π, color="C1")
-    ax2.yaxis.set_major_formatter(PyPlot.matplotlib.ticker.FormatStrFormatter(L"%g$\pi$"))
-    ax2.set_ylabel(L"$\angle g(i\omega)$")
+    circle_counter = 0
+    ∠g_iω[1] = angle(g_iω[1])
+    for i = 2:length(g_iω)
+        ∠g_iω[i] = angle(g_iω[i]) - circle_counter * 2 * π
+        if ∠g_iω[i] - ∠g_iω[i-1] > π
+            ∠g_iω[i] -= 2 * π
+            circle_counter += 1
+        end
+    end
+
+    fig, axs = subplots(2, 1, sharex=true, figsize=(8, 7))
+    axs[1].plot(ω, abs.(g_iω), color="C1")
+    axs[1].set_ylabel(L"$|g(i\omega)|$")
+    axs[1].set_title("Bode plot")
+    axs[1].set_xscale("log")
+    axs[1].set_yscale("log")
+    axs[2].set_xscale("log")
+    axs[2].plot(ω, ∠g_iω / π, color="C1")
+    axs[2].yaxis.set_major_formatter(PyPlot.matplotlib.ticker.FormatStrFormatter(L"%g$\pi$"))
+    axs[2].set_ylabel(L"$\angle g(i\omega)$")
+    for ax in axs
+        ax.minorticks_on()
+        ax.grid(b=true, which="minor", alpha=0.25)
+    end
     xlabel(L"frequency, $\omega$")
     tight_layout()
-    return ax1, ax2
+    return axs
 end
 
 @doc raw"""

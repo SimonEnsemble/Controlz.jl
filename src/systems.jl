@@ -13,8 +13,8 @@ a polynomial of type `Poly`
 
 # Example
 ```
-julia> g_ol = 4 / (s + 3) / (s + 2) / (s + 1)
-julia> characteristic_polynomial(g_ol) # s³ + 6s² + 11s + 10, a `Poly`
+g_ol = 4 / (s + 3) / (s + 2) / (s + 1)
+characteristic_polynomial(g_ol) # s³ + 6s² + 11s + 10, a `Poly`
 ```
 """
 function characteristic_polynomial(g_ol::TransferFunction)
