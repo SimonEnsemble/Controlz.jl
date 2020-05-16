@@ -30,11 +30,7 @@ function gain_phase_margins(g_ol::TransferFunction)
     # ∠ G(i ω_c) = -π
     ω_c = NaN
     try
-        ω_c = fzero(ω -> angle(evaluate(g_ol, im * ω)) + π, 0.0001)
-        # sometimes happens that ω_c is huge and not actually a zero.
-        if ! isapprox(angle(evaluate(g_ol, im * ω_c)), -π, atol=0.01)
-            ω_c = NaN
-        end
+        ω_c = fzero(ω -> angle(evaluate(g_ol, im * ω)) + π, 0.0001, atol=2*sqrt(eps()))
     catch da_error
         if isa(da_error, Roots.ConvergenceFailed)
             ω_c = NaN
@@ -45,7 +41,7 @@ function gain_phase_margins(g_ol::TransferFunction)
     # | G(i ω_g) | = 1
     ω_g = NaN
     try
-        ω_g = fzero(ω -> abs(evaluate(g_ol, im * ω)) - 1.0, 0.001)
+        ω_g = fzero(ω -> abs(evaluate(g_ol, im * ω)) - 1.0, 0.001, atol=2*sqrt(eps()))
     catch da_error
         if isa(da_error, Roots.ConvergenceFailed)
             ω_g = NaN
