@@ -1,6 +1,12 @@
 - install mkdocs via pip
-- install windmill theme via pip3 install mkdocs-windmill
+- install themes:
+    pip3 install mkdocs-windmill # for windmill theme
+    sudo pip install mkdocs-bootswatch # for united theme
 - run `julia make.jl` in `docs`
 - install markdown extension for math `pip3 install pymdown-extensions`
 - in terminal `mkdocs build` from `docs` directory
 - `mkdocs serve` then go to address shown in browser.
+
+#  new notes. actually, what works is:
+- run `julia make.jl` in `docs`
+then just `xdg-open build/index.html`

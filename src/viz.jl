@@ -171,13 +171,16 @@ function root_locus(g_ol::TransferFunction;
 end
 
 """
-    axs = bode_plot(tf, log10_ω_min=-4.0, log10_ω_max=4.0)
+    axs = bode_plot(tf, log10_ω_min=-4.0, log10_ω_max=4.0, nb_pts=300)
 
 draw the Bode plot of a transfer function `tf` to visualize its frequency response.
 returns the two axes of the plot for further tuning via `matplotlib` commands.
+
+adjust the range of frequencies that the Bode plot presents with `log10_ω_min` and `log10_ω_max`.
+increase the resolution of the Bode plot with `nb_pts`.
 """
-function bode_plot(g::TransferFunction; log10_ω_min::Float64=-4.0, log10_ω_max::Float64=4.0)
-    ω = 10.0 .^ range(log10_ω_min, log10_ω_max, length=300)
+function bode_plot(g::TransferFunction; log10_ω_min::Float64=-3.0, log10_ω_max::Float64=3.0, nb_pts::Int=300)
+    ω = 10.0 .^ range(log10_ω_min, log10_ω_max, length=nb_pts)
     g_iω = [evaluate(g, im * ω_i) for ω_i in ω]
     ∠g_iω = zeros(length(g_iω))
 

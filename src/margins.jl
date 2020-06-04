@@ -10,11 +10,14 @@ struct Margins
 end
 
 """
-    margins = gain_phase_margins(g_ol)
+    margins = gain_phase_margins(g_ol, ω_c_guess=0.001, ω_g_guess=0.001)
 
 compute critical frequency (radians / time), gain crossover frequency (radians / time), 
 gain margin, and phase margin (radians) of a closed loop, given its
 closed loop transfer function `g_ol::TransferFunction`.
+
+if ω_c or ω_g is not found (i.e. if either are `NaN`), but the `bode_plot` clearly shows 
+a critical/gain crossover frequency, adjust `ω_c_guess` or `ω_g_guess` to find the root.
 
 # Example
 ```
@@ -26,26 +29,28 @@ margins.gain_margin # gain margin
 margins.phase_margin # phase margin (radians)
 ```
 """
-function gain_phase_margins(g_ol::TransferFunction)
+function gain_phase_margins(g_ol::TransferFunction; ω_c_guess::Float64=0.001, ω_g_guess::Float64=0.001)
     # ∠ G(i ω_c) = -π
     ω_c = NaN
     try
-        ω_c = fzero(ω -> angle(evaluate(g_ol, im * ω)) + π, 0.0001, atol=2*sqrt(eps()))
+        ω_c = fzero(ω -> angle(evaluate(g_ol, im * ω)) + π, ω_c_guess, atol=2*sqrt(eps()))
     catch da_error
         if isa(da_error, Roots.ConvergenceFailed)
             ω_c = NaN
         else
+            println(da_error)
             error("something went wrong when computing ω_c")
         end
     end
     # | G(i ω_g) | = 1
     ω_g = NaN
     try
-        ω_g = fzero(ω -> abs(evaluate(g_ol, im * ω)) - 1.0, 0.001, atol=2*sqrt(eps()))
+        ω_g = fzero(ω -> abs(evaluate(g_ol, im * ω)) - 1.0, ω_g_guess, atol=2*sqrt(eps()))
     catch da_error
         if isa(da_error, Roots.ConvergenceFailed)
             ω_g = NaN
         else
+            println(da_error)
             error("something went wrong when computing ω_g")
         end
     end

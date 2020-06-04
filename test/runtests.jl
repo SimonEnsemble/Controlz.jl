@@ -420,4 +420,9 @@ end
     @test isnan(m.ω_g)
     @test isapprox(m.gain_margin, 4.0, atol=0.0001)
     @test isnan(m.phase_margin)
+    
+    g_ol = 20*(1+1/(3*s)) * 4 /(s+4)/(s+6)*exp(-0.001*s)/(s+2)
+    m = gain_phase_margins(g_ol)
+    @test isapprox(m.ω_c, 6.32, atol=0.01)
+    @test isapprox(m.gain_margin, 5.397, atol=0.01)
 end

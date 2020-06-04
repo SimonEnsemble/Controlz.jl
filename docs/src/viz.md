@@ -34,10 +34,12 @@ nyquist_diagram(g)
 
 ```
 g = 3 / (s + 1)
-bode_plot(g, log10_ω_min=-4.0, log10_ω_max=4.0)
+bode_plot(g, log10_ω_min=-4.0, log10_ω_max=4.0, nb_pts=300)
 ```
 
 ![](example_bode.png)
+
+the range of frequencies presented is determined by `log10_ω_min` and `log10_ω_max`. the resolution of the Bode plot is determined by `nb_pts`.
 
 see [`gain_phase_margins`](@ref) to compute the gain and phase margins and the critical and gain crossover frequencies.
 
