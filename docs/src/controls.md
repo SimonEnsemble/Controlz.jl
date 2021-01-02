@@ -61,7 +61,7 @@ Y = g_servo * Y_sp # resulting output in response to our set point change
 finally, we can find the response by inverting `Y` into the time domain:
 ```julia
 final_time = 12.0
-t, y = simulate(Y, final_time)
+data_y = simulate(Y, final_time)
 ```
 
 to also see the controller output, we build the error signal `E` and use $g_c(s)=U(s)/E(s)$ to get `U`.
@@ -69,12 +69,12 @@ to also see the controller output, we build the error signal `E` and use $g_c(s)
 ```julia
 E = Y_sp - Y # error signal
 U = gc * E # resulting controller output
-t, u = simulate(U, final_time) # controller output in the time domain
+data_u = simulate(U, final_time) # controller output in the time domain
 ```
 
 a cheap way of getting the set point $y_{sp}(t)$ is:
 ```julia
-t, ysp = simulate(Y_sp, final_time)
+data_y_sp = simulate(Y_sp, final_time)
 ```
 
 finally, we can plot `y`, `ysp`, and `u` against `t` to visualize the response of our feedback PI control system to a set point change.
@@ -86,8 +86,8 @@ also plotted separately is the contribution to the controller output by the P- a
 U_Paction = Kc * E # P-action
 U_Iaction = Kc * τI / s * E # I-action
 
-t, u_Paction = simulate(U_Paction, final_time)
-t, u_Iaction = simulate(U_Iaction, final_time)
+data_u_Paction = simulate(U_Paction, final_time)
+data_u_Iaction = simulate(U_Iaction, final_time)
 ```
 
 ```@docs

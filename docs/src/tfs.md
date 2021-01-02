@@ -13,35 +13,33 @@ we can construct $g(s)$ in an intuitive way that resembles the algebraic express
 g = (5 * s + 1) / (s ^ 2 + 4 * s + 5) # way 1
 ```
 
-alternatively, we can construct a `TransferFunction` using the coefficients associated with the powers of $s$ in the numerator and denominator polynomials, respectively, of $g(s)$. The coefficients of the highest powers go first.
+alternatively, we can construct a `TransferFunction` using the coefficients associated with the powers of $s$ in the polynomials composing the numerator and denominator, respectively, of $g(s)$. The coefficients of the highest powers of $s$ go first.
 ```julia
 g = TransferFunction([5, 1], [1, 4, 5]) # way 2
 ```
 
-note that we defined `s` such that `s == TransferFunction([1, 0], [1])`.
+note that, under the hood, we defined `s` such that `s == TransferFunction([1, 0], [1])`.
 
-as rational functions associated with a time delay, each `TransferFunction` data structure has a `numerator` (a polynomial in `:s`), `denominator` (a polynomial in `:s`), and `time_delay` (a number) attribute. access these attributes as follows:
+as rational functions associated with a time delay, each `TransferFunction` data structure has a `numerator` (a polynomial in `:s`), `denominator` (a polynomial in `:s`), and `time_delay` (a real number) attribute. access these attributes as follows:
 
 ```julia
-g.numerator # 5s + 1, a `Poly`
+g.numerator   # 5s + 1, a `Poly`
 g.denominator # s² + 4s + 5, a `Poly`
-g.time_delay # 0.0, a `Float64`
+g.time_delay  # 0.0, a `Float64`
 ```
 
 `g.numerator` and `g.denominator` are `Poly` types from the package [Polynomials.jl](https://github.com/JuliaMath/Polynomials.jl).
 
 ## time delays
 
-add a time delay to a transfer function as follows. 
+to construct a transfer function with a time delay, such as:
+$$g(s)=\dfrac{3}{2s+1}e^{-2s}$$
 
 ```julia
-θ = 2.0 # time delay
-g = 3 / (2 * s + 1) * exp(-θ * s) # way 1
+θ = 2.0                              # time delay
+g = 3 / (2 * s + 1) * exp(-θ * s)    # way 1
 g = TransferFunction([3], [2, 1], θ) # way 2
 ```
-
-the resulting transfer function `g` represents:
-$$g(s)=\dfrac{3}{2s+1}e^{-2s}$$.
 
 ## zeros, poles, k-factor representation
 
@@ -75,12 +73,12 @@ zeros_poles_k(g) # [-0.2], [-2-im, -2+im], 5
 we can add `+`, subject `-`, multiply `*`, and divide `/` transfer functions.
 
 ```julia
-g1 = 3 / (s + 2)
-g2 = 1 / (s + 4)
+g₁ = 3 / (s + 2)
+g₂ = 1 / (s + 4)
 
-g_product = g1 * g2 # 3 / (s^2 + 6s + 8)
+g_product = g₁ * g₂ # 3 / (s^2 + 6s + 8)
 
-g_sum = g1 + g2 # (4s + 14) / (s^2 + 6s + 8)
+g_sum = g₁ + g₂     # (4s + 14) / (s^2 + 6s + 8)
 ```
 
 ## evaluate a transfer function at a complex number
@@ -111,7 +109,7 @@ g = (5 * s + 5) / (s ^ 2 + 4 * s + 5)
 z, p, gain = zeros_poles_gain(g)
 # z = [-1.0]
 # p = [-2-im, -2+im]
-# gain  = 1.0
+# gain = 1.0
 ```
 
 ## cancel poles and zeros
@@ -133,15 +131,15 @@ we can find the order of the polynomials in the numerator and denominator of the
 
 ```julia
 g = (s + 1) / ((s + 2) * (s + 3))
-order(g) # (1, 2)
+system_order(g) # (1, 2)
 ```
 
 note that is only the *apparent* order; you may need to call `pole_zero_cancellation` to get the effective order:
 ```julia
 g = (s + 1) / ((s + 2) * (s + 3) * (s + 1))
-order(g) # (1, 3)
+system_order(g) # (1, 3)
 g = pole_zero_cancellation(g)
-order(g) # (0, 2)
+system_order(g) # (0, 2)
 ```
 
 ## frequency response of an open-loop transfer function
@@ -217,7 +215,7 @@ g = 1.0 / (8 * s^2 + 0.8 * s + 2)
     strictly_proper
     characteristic_polynomial
     zpk_form
-    order
+    system_order
     first_order_system
     second_order_system
     time_constant

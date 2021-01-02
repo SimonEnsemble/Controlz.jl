@@ -6,6 +6,7 @@ using PyPlot
 using Interpolations
 using Printf
 using Roots
+using DataFrames
 
 # hipster plot theme
 PyPlot.matplotlib.style.use(normpath(joinpath(pathof(Controlz), "..", "hipster.mplstyle")))
@@ -21,7 +22,7 @@ include("show.jl")
 
 export
     # tf.jl
-    TransferFunction, zeros_poles_gain, zeros_poles_k, zero_frequency_gain, evaluate, s, proper, strictly_proper, pole_zero_cancellation, zpk_form, order,
+    TransferFunction, zeros_poles_gain, zeros_poles_k, zero_frequency_gain, evaluate, s, proper, strictly_proper, pole_zero_cancellation, zpk_form, system_order,
     # special_tfs.jl
     first_order_system, second_order_system, time_constant, damping_coefficient,
     # systems.jl
