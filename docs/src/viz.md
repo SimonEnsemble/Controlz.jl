@@ -15,8 +15,8 @@ viz_poles_and_zeros(g)
 g = 4 / (4 * s ^ 2 + 0.8 * s + 1)
 U = 1 / s
 Y = g * U
-t, y = simulate(Y, (0.0, 50.0))
-viz_response(t, y, plot_title="SO underdamped step response")
+data = simulate(Y, (0.0, 50.0))
+viz_response(data, plot_title="SO underdamped step response")
 ```
 
 ![](SO_underdamped_step_response.png)
@@ -57,9 +57,8 @@ root_locus(g_ol)
 invoke the hipster plot theme used to make plots for this documentation by:
 
 ```
-using Controlz
 using PyPlot
-PyPlot.matplotlib.style.use(normpath(joinpath(pathof(Controlz), "..", "hipster.mplstyle")))
+PyPlot.matplotlib.style.use("https://raw.githubusercontent.com/SimonEnsemble/Controlz.jl/master/src/hipster.mplstyle")
 ```
 
 ## detailed docs

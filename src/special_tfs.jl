@@ -63,10 +63,10 @@ time_constant(g) # 2.0
 ```
 """
 function time_constant(g::TransferFunction)
-    if order(g) == (0, 1)
+    if system_order(g) == (0, 1)
         # xx / (a s + b) ==> τ = a / b
         return g.denominator[1] / g.denominator[0]
-    elseif order(g) == (0, 2)
+    elseif system_order(g) == (0, 2)
         # xx / (a s^2 + b s + c) ==> τ = sqrt(a/c)
         return sqrt(g.denominator[2] / g.denominator[0])
     else
@@ -93,7 +93,7 @@ damping_coefficient(g) # 0.1
 ```
 """
 function damping_coefficient(g::TransferFunction)
-    if order(g) != (0, 2)
+    if system_order(g) != (0, 2)
         error("`damping_coefficient` only pertains to (0, 2) transfer functions.")
     end
     τ = time_constant(g)

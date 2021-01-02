@@ -15,9 +15,9 @@ g = 4 / (4 * s ^ 2 + 0.8 * s + 1) # construct transfer function
 U = 1 / s # unit step input, U(s)
 Y = g * U # system output, Y(s)
 
-t, y = simulate(Y, 50.0) # simulate until t = 50
+data = simulate(Y, 50.0) # simulate until t = 50
 
-viz_response(t, y, plot_title="SO underdamped step response")
+viz_response(data, plot_title="SO underdamped step response")
 ```
 
 ![](SO_underdamped_step_response.png)
@@ -25,7 +25,6 @@ viz_response(t, y, plot_title="SO underdamped step response")
 # install the `Controlz.jl` package in Julia
 
 * in the Julia REPL: go into package mode by typing `]`. Then `add Controlz#master`. Then `Backspace` to exit package mode.
-* in Jupyter Notebook or Julia code: `using Pkg; Pkg.add("Controlz#master")`.
+* in a Jupyter or Pluto Notebook: `using Pkg; Pkg.add("Controlz#master")`. (this way also works in the REPL)
 
 for visualization, `Controlz.jl` relies on `PyPlot.jl`, a Julia interface to matplotlib in Python. see [here](https://github.com/JuliaPy/PyPlot.jl) if you have trouble installing `PyPlot.jl`.
-

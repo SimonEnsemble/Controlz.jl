@@ -277,7 +277,7 @@ function pole_zero_cancellation(tf::TransferFunction; verbose::Bool=false)
 end
 
 """
-    o = order(tf::TransferFunction)
+    o = system_order(tf::TransferFunction)
 
 return the order of the numerator and denominator of the transfer function `tf`.
 
@@ -289,21 +289,21 @@ use [`pole_zero_cancellation`](@ref) first if you wish to cancel poles and zeros
 # examples
 ```julia
 g = 1 / (s + 1)
-order(g) # (0, 1)
+system_order(g) # (0, 1)
 
 g = (s + 1) / ((s + 2) * (s + 3))
-order(g) # (1, 2)
+system_order(g) # (1, 2)
 ```
 
 where `pole_zero_cancellation` is necessary:
 ``julia
 g = (s + 1) / (s + 1) ^ 2
-order(g) # (1, 2)
+system_order(g) # (1, 2)
 
 g = pole_zero_cancellation(g) # 1 / (s + 1)
-order(g) # (0, 1)
+system_order(g) # (0, 1)
 ```
 """
-function order(tf::TransferFunction)
+function system_order(tf::TransferFunction)
     return (degree(tf.numerator), degree(tf.denominator))
 end

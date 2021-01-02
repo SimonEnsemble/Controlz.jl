@@ -1,5 +1,5 @@
 using Test
-using Polynomials
+using Polynomials, DataFrames
 
 push!(LOAD_PATH, joinpath(pwd(), "src")) # run from main dir
 using Controlz
@@ -219,11 +219,11 @@ const s = TransferFunction([1, 0], [1])
     #   order
     ###
     g = (s + 1) / (s + 1) ^ 2
-    @test order(g) == (1, 2)
+    @test system_order(g) == (1, 2)
     g = pole_zero_cancellation(g)
-    @test order(g) == (0, 1)
-    @test order(first_order_system(1.0, 2.0)) == (0, 1)
-    @test order(second_order_system(1.0, 2.0, 1.9)) == (0, 2)
+    @test system_order(g) == (0, 1)
+    @test system_order(first_order_system(1.0, 2.0)) == (0, 1)
+    @test system_order(second_order_system(1.0, 2.0, 1.9)) == (0, 2)
 
     ###
     #  time constant, damping coefficient
@@ -275,60 +275,60 @@ end
     # L[cos(at)] = s/(s^2+a^2)
     a = 2.3
     U = s / (s^2+a^2)
-    t, u = simulate(U, 12.0)
+    u_data = simulate(U, 12.0)
     _cosat(t::Float64) = t < 0.0 ? 0.0 : cos(a*t)
-    @test isapprox(u, _cosat.(t), rtol=0.001)
+    @test isapprox(u_data[:, :output], _cosat.(u_data[:, :t]), rtol=0.001)
     # L[shifted step] = e^{-a*s}/s
     U = exp(-a*s) / s
-    t, u = simulate(U, 12.0)
+    u_data = simulate(U, 12.0)
     _shifted_step(t::Float64) = t < a ? 0.0 : 1.0
-    @test isapprox(u, _shifted_step.(t), rtol=0.001)
+    @test isapprox(u_data[:, :output], _shifted_step.(u_data[:, :t]), rtol=0.001)
     # L[t sin(at)] = 2as/(s^2+a^2)^2
     a = 2.1
     U = 2 * a * s / (s^2 + a^2)^2
-    t, u = simulate(U, 12.0)
-    u_truth = [t_i > 0.0 ? t_i * sin(a * t_i) : 0.0 for t_i in t]
-    isapprox(u, u_truth, rtol=0.01)
+    u_data = simulate(U, 12.0)
+    u_truth = [t_i > 0.0 ? t_i * sin(a * t_i) : 0.0 for t_i in u_data[:, :t]]
+    isapprox(u_data[:, :output], u_truth, rtol=0.01)
     # L{exp[-3(t-2)]S(t-2)} = e^{-2s} / (s+3)
     U = exp(-2*s) / (s + 3)
-    t, u = simulate(U, 12.0)
-    u_truth = [t_i > 2.0 ? exp(-3*(t_i - 2)) : 0.0 for t_i in t]
-    isapprox(u, u_truth, rtol=0.001)
+    u_data = simulate(U, 12.0)
+    u_truth = [t_i > 2.0 ? exp(-3*(t_i - 2)) : 0.0 for t_i in u_data[:, :t]]
+    isapprox(u_data[:, :output], u_truth, rtol=0.001)
 
     # first order step response
     K = 4.3
     τ = 2.8
     g = K / (τ * s + 1)
     u = 1 / s
-    t, y = simulate(g * u, 12.0)
-    y_truth = K * (1.0 .- exp.(-t ./ τ))
-    y_truth[t .< 0.0] .= 0.0
-    @test isapprox(y_truth, y, rtol=0.0001)
+    data = simulate(g * u, 12.0)
+    y_truth = K * (1.0 .- exp.(-data[:, :t] ./ τ))
+    y_truth[data[:, :t] .< 0.0] .= 0.0
+    @test isapprox(y_truth, data[:, :output], rtol=0.0001)
 
     # first order impulse response
-    t, y = simulate(g, 12.0)
-    y_truth = K / τ * exp.(-t/τ)
-    y_truth[t .< 0.0] .= 0.0
-    @test isapprox(y_truth, y, rtol=0.0001)
+    data = simulate(g, 12.0)
+    y_truth = K / τ * exp.(-data[:, :t]/τ)
+    y_truth[data[:, :t] .< 0.0] .= 0.0
+    @test isapprox(y_truth, data[:, :output], rtol=0.0001)
 
     # first order ramp input
     a = 2.0 # slope of ramp
     Y = g * a / s^2
-    t, y = simulate(Y, 10.0)
-    y_truth = K * a * t .+ K * a * τ * (exp.(- t ./ τ) .- 1.0)
-    y_truth[t .< 0.0] .= 0.0
-    @test isapprox(y_truth, y, rtol=0.0001)
+    data = simulate(Y, 10.0)
+    y_truth = K * a * data[:, :t] .+ K * a * τ * (exp.(- data[:, :t] ./ τ) .- 1.0)
+    y_truth[data[:, :t] .< 0.0] .= 0.0
+    @test isapprox(y_truth, data[:, :output], rtol=0.0001)
 
     # first order sinusoidal input
     ω = 2.0
     A = 4.5
     Y = g * A * ω / (s^2 + ω^2)
-    t, y = simulate(Y, 10.0)
-    ϕ=atan(-τ*ω)
-    y_truth = τ * ω / (1 + (τ*ω)^2) * exp.(-t ./ τ) .+ 1 / sqrt(1+(τ*ω)^2) * sin.(ω*t .+ ϕ)
+    data = simulate(Y, 10.0)
+    ϕ = atan(-τ*ω)
+    y_truth = τ * ω / (1 + (τ*ω)^2) * exp.(-data[:, :t] ./ τ) .+ 1 / sqrt(1+(τ*ω)^2) * sin.(ω*data[:, :t] .+ ϕ)
     y_truth *= K * A
-    y_truth[t .< 0.0] .= 0.0
-    @test isapprox(y_truth, y, rtol=0.001)
+    y_truth[data[:, :t] .< 0.0] .= 0.0
+    @test isapprox(y_truth, data[:, :output], rtol=0.001)
 
     # FOPTD
     M = 3.3
@@ -337,10 +337,10 @@ end
     K = 9.0
     g = K / (τ * s + 1) * exp(-θ * s)
     u = M / s
-    t, y = simulate(g * u, 10.0)
-    y_truth = K * M * (1.0 .- exp.(-(t .- θ) ./ τ))
-    y_truth[t .< θ] .= 0.0
-    @test isapprox(y_truth, y, rtol=0.001)
+    data = simulate(g * u, 10.0)
+    y_truth = K * M * (1.0 .- exp.(-(data[:, :t] .- θ) ./ τ))
+    y_truth[data[:, :t] .< θ] .= 0.0
+    @test isapprox(y_truth, data[:, :output], atol=0.001)
 
     ##
     # second order, overdamped
@@ -351,17 +351,17 @@ end
     # response to step
     M = 3.3
     Y = g * M / s 
-    t, y = simulate(Y, 20.0)
-    y_truth = 1.0 .- exp.(- ξ / τ * t) .* (
-        ξ / sqrt(ξ^2 - 1) * sinh.(sqrt.(ξ^2 - 1) / τ * t) .+ cosh.(sqrt.(ξ^2 - 1) / τ * t))
+    data = simulate(Y, 20.0)
+    y_truth = 1.0 .- exp.(- ξ / τ * data[:, :t]) .* (
+        ξ / sqrt(ξ^2 - 1) * sinh.(sqrt.(ξ^2 - 1) / τ * data[:, :t]) .+ cosh.(sqrt.(ξ^2 - 1) / τ * data[:, :t]))
     y_truth *= K * M
-    y_truth[t .< 0.0] .= 0.0
-    @test isapprox(y_truth, y, rtol=0.001)
+    y_truth[data[:, :t] .< 0.0] .= 0.0
+    @test isapprox(y_truth, data[:, :output], rtol=0.001)
     # response to impulse
-    t, y = simulate(g, 20.0)
-    y_truth = K / τ / sqrt(ξ^2-1) * exp.(-ξ/τ*t) .* sinh.(sqrt(ξ^2-1)/τ*t)
-    y_truth[t .< 0.0] .= 0.0
-    @test isapprox(y_truth, y, rtol=0.001)
+    data = simulate(g, 20.0)
+    y_truth = K / τ / sqrt(ξ^2-1) * exp.(-ξ/τ*data[:, :t]) .* sinh.(sqrt(ξ^2-1)/τ*data[:, :t])
+    y_truth[data[:, :t] .< 0.0] .= 0.0
+    @test isapprox(y_truth, data[:, :output], rtol=0.001)
 
     ##
     # second order, underdamped
@@ -370,10 +370,10 @@ end
     ξ = 0.2
     g = K / (τ ^ 2 * s ^ 2 + 2 * τ * ξ * s + 1)
     # impulse response
-    t, y = simulate(g, 20.0)
-    y_truth = K / τ / sqrt(1-ξ^2) * exp.(-ξ/τ*t) .* sin.(sqrt(1-ξ^2)/τ*t)
-    y_truth[t .< 0.0] .= 0.0
-    @test isapprox(y_truth, y, rtol=0.001)
+    data = simulate(g, 20.0)
+    y_truth = K / τ / sqrt(1-ξ^2) * exp.(-ξ/τ*data[:, :t]) .* sin.(sqrt(1-ξ^2)/τ*data[:, :t])
+    y_truth[data[:, :t] .< 0.0] .= 0.0
+    @test isapprox(y_truth, data[:, :output], rtol=0.001)
 
     ##
     # second order with zeros
@@ -383,21 +383,22 @@ end
     τ₂ = 2.5
     g = K * (τₐ * s + 1) / (τ₁ * s + 1) / (τ₂ * s + 1)
     # step response
-    t, y = simulate(g / s, 10.0) # direct inversion
-    y_truth = 1 .- (τ₁ - τₐ) / (τ₁ - τ₂) * exp.(-t/τ₁) .- (τ₂ - τₐ) / (τ₂ - τ₁) * exp.(-t/τ₂)
+    data = simulate(g / s, 10.0) # direct inversion
+    y_truth = 1 .- (τ₁ - τₐ) / (τ₁ - τ₂) * exp.(-data[:, :t]/τ₁) .- (τ₂ - τₐ) / (τ₂ - τ₁) * exp.(-data[:, :t]/τ₂)
     y_truth *= K
-    y_truth[t .< 0.0] .= 0.0
-    @test isapprox(y_truth, y, rtol=0.001)
+    y_truth[data[:, :t] .< 0.0] .= 0.0
+    @test isapprox(y_truth, data[:, :output], rtol=0.001)
 
     # inerpolate
     t = [0.0, 1.0, 2.0]
     y = [0.0, 5.0, 10.0]
-    @test isapprox(interpolate(t, y, 1.0), 5.0)
-    @test isapprox(interpolate(t, y, 1.2), 1.2*5)
+    data = DataFrame(t=t, output=y)
+    @test isapprox(interpolate(data, 1.0), 5.0)
+    @test isapprox(interpolate(data, 1.2), 1.2*5)
     τ = 3.45
     g = 1 / (τ * s + 1)
-    t, y = simulate(g / s, 10.0)
-    @test isapprox(interpolate(t, y, τ), 0.632, atol=0.002)
+    data = simulate(g / s, 10.0)
+    @test isapprox(interpolate(data, τ), 0.632, atol=0.002)
 end
 
 @testset "testing Controls" begin

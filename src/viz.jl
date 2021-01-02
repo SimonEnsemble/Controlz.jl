@@ -1,24 +1,22 @@
-using LaTeXStrings
-
 function draw_axes()
     axvline(x=0, color="0.8", lw=2, zorder=1)
     axhline(y=0, color="0.8", lw=2, zorder=1)
 end
 
 """
-    viz_response(t, y, 
+    viz_response(data, 
                  plot_title="", plot_xlabel="time, t", 
                  plot_ylabel="output, y(t)",
                  savename=nothing)
 
-plot `y` vs. `t` to visualize the response of a system to an input. typically `t` and `y` are outputs of [`simulate`](@ref).
+plot `data[:, :output]` vs. `data[:, :t]` to visualize the response of a system to an input. 
+typically the data frame, `data`, is returned from [`simulate`](@ref).
 
 note that PyPlot.jl (matplotlib) commands can be invoked after `viz_response` to make further changes to the figure panel.
 e.g. `xlim([0, 1])` can be applied after `viz_response`.
 
 # Arguments
-* `t::Array{Float64}`: array of times
-* `y::Array{Float64}`: array of values of response variables at the corresponding times in `t`
+* `data::DataFrame`: data frame of time series data, containing a `:t` column for times and `:output` column for the outputs.
 * `plot_title::Union{String, LaTeXString}`: title of plot
 * `plot_xlabel::Union{String, LaTeXString}`: x-label
 * `plot_ylabel::Union{String, LaTeXString}`: y-label
@@ -28,11 +26,11 @@ e.g. `xlim([0, 1])` can be applied after `viz_response`.
 ```
 g = 4 / (4 * s ^ 2 + 0.8 * s + 1)
 u = 1 / s
-t, y = simulate(g * u, (0.0, 50.0))
-viz_response(t, y)
+data = simulate(g * u, (0.0, 50.0))
+viz_response(data)
 ```
 """
-function viz_response(t::Array{Float64}, y::Array{Float64}; 
+function viz_response(data::DataFrame;
         plot_title::Union{String, LaTeXString}="", 
         plot_xlabel::Union{String, LaTeXString}=L"time, $t$",
         plot_ylabel::Union{String, LaTeXString}=L"output, $y(t)$",
@@ -40,7 +38,7 @@ function viz_response(t::Array{Float64}, y::Array{Float64};
     )
     
     figure()
-    plot(t, y, zorder=100)
+    plot(data[:, :t], data[:, :output], zorder=100)
     xlabel(plot_xlabel)
     ylabel(plot_ylabel)
     title(plot_title)
@@ -214,19 +212,18 @@ function bode_plot(g::TransferFunction; log10_ω_min::Float64=-3.0, log10_ω_max
 end
 
 @doc raw"""
-    mk_gif(t, y, plot_title="", plot_xlabel="time, t", 
+    mk_gif(data, plot_title="", plot_xlabel="time, t", 
                  plot_ylabel="output, y(t)",
                  savename="response")
 
 make a .gif of the process response.
-`t` and `y` are outputs of [`simulate`](@ref).
+`data` is a data frame with two columns, `:t` and `:output`, likely returned from [`simulate`](@ref).
 accepts same arguments as [`viz_response`](@ref).
 ImageMagick must be installed to create the .gif.
 the .gif is saved as a file `savename`.
 
 # Arguments
-* `t::Array{Float64}`: array of times
-* `y::Array{Float64}`: array of values of response variables at the corresponding times in `t`
+* `data::DataFrame`: data frame of time series data, containing a `:t` column for times and `:output` column for the outputs.
 * `plot_title::Union{String, LaTeXString}`: title of plot
 * `plot_xlabel::Union{String, LaTeXString}`: x-label
 * `plot_ylabel::Union{String, LaTeXString}`: y-label
