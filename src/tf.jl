@@ -38,10 +38,12 @@ TransferFunction(num::ArrayOfReals, den::ArrayOfReals, td::Union{Float64, Int}) 
 
 const s = TransferFunction([1, 0], [1])
 
-*(tf1::TransferFunction, tf2::TransferFunction) =
-    TransferFunction(tf1.numerator * tf2.numerator,
-                     tf1.denominator * tf2.denominator,
-                     tf1.time_delay + tf2.time_delay)
+function *(tf1::TransferFunction, tf2::TransferFunction)
+    g = TransferFunction(tf1.numerator * tf2.numerator,
+                         tf1.denominator * tf2.denominator,
+                         tf1.time_delay + tf2.time_delay)
+    return pole_zero_cancellation(g)
+end
 
 *(k::Number, tf::TransferFunction) = TransferFunction(k * tf.numerator, tf.denominator, tf.time_delay)
 *(tf::TransferFunction, k::Number) = *(k, tf)
@@ -81,9 +83,10 @@ function +(tf1::TransferFunction, tf2::TransferFunction)
     if (tf1.time_delay != tf2.time_delay)
         error("cannot add two transfer functions that have different time delays")
     end
-    return TransferFunction(tf1.numerator * tf2.denominator + tf1.denominator * tf2.numerator,
+    g = TransferFunction(tf1.numerator * tf2.denominator + tf1.denominator * tf2.numerator,
                             tf1.denominator * tf2.denominator,
                             tf1.time_delay)
+    return pole_zero_cancellation(g)
 end
 
 +(tf::TransferFunction, x::Number) = tf + TransferFunction([x], [1.0])
@@ -93,10 +96,12 @@ end
 -(tf::TransferFunction) = -1.0 * tf
 -(tf1::TransferFunction, tf2::TransferFunction) = +(tf1, -1*tf2)
 
-/(tf1::TransferFunction, tf2::TransferFunction) =
-   TransferFunction(tf1.numerator * tf2.denominator,
-                    tf1.denominator * tf2.numerator,
-                    tf1.time_delay - tf2.time_delay)
+function /(tf1::TransferFunction, tf2::TransferFunction)
+    g = TransferFunction(tf1.numerator * tf2.denominator,
+                        tf1.denominator * tf2.numerator,
+                        tf1.time_delay - tf2.time_delay)
+    return pole_zero_cancellation(g)
+end
 /(tf::TransferFunction, x::Number) = TransferFunction(tf.numerator / x, tf.denominator, tf.time_delay)
 /(x::Number, tf::TransferFunction) = TransferFunction([x], [1.0], 0.0) / tf
 
@@ -235,8 +240,8 @@ strictly_proper(tf::TransferFunction) = degree(tf.numerator) < degree(tf.denomin
 """
     tf = pole_zero_cancellation(tf, verbose=false)
 
-Find pairs of identical poles and zeros and return a new transfer function with the appropriate poles and zeros cancelled. 
-This is achieved by comparing the poles and zeros with `isapprox`.
+find pairs of identical poles and zeros and return a new transfer function with the appropriate poles and zeros cancelled. 
+this is achieved by comparing the poles and zeros with `isapprox` and canceling if e.g., a pole is equal to a zero.
 
 # Arguments
 * `tf::TransferFunction`: the transfer function
@@ -244,8 +249,7 @@ This is achieved by comparing the poles and zeros with `isapprox`.
 
 # Example
 ```
-tf = s * (s - 1) / (s * (s + 1))
-pole_zero_cancellation(tf) # (s-1)/(s+1)
+pole_zero_cancellation(s * (s - 1) / (s * (s + 1))) # (s-1)/(s+1)
 ```
 """
 function pole_zero_cancellation(tf::TransferFunction; verbose::Bool=false)

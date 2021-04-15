@@ -3,7 +3,7 @@ function draw_axes()
     axhline(y=0, color="0.8", lw=2, zorder=1)
 end
 
-"""
+@doc raw"""
     viz_response(data, 
                  plot_title="", plot_xlabel="time, t", 
                  plot_ylabel="output, y(t)",

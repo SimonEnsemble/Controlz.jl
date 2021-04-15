@@ -59,6 +59,7 @@ const s = TransferFunction([1, 0], [1])
     @test isapprox(-s, -1.0 * s)
     g = 3 / (s+2) - 2 / (s+2)
     @test isapprox(pole_zero_cancellation(g), 1/(s+2))
+    @test isapprox(g, 1/(s+2))
     
     ###
     #  divide
@@ -149,8 +150,8 @@ const s = TransferFunction([1, 0], [1])
     sort!(_z)
     sort!(_p)
     @test isapprox(_k, 45.0)
-    @test isapprox(_z, [0.0, 0.0])
-    @test isapprox(_p, [0.0, 8.0, 23.0])
+    @test isapprox(_z, [0.0])
+    @test isapprox(_p, [8.0, 23.0])
     p = [-2+im, -2-im] # try with complex numbers.
     z = [-1/5]
     @test isapprox(zeros_poles_k(z, p, 5.0), (5*s+1) / (s^2+4*s+5))
@@ -174,7 +175,7 @@ const s = TransferFunction([1, 0], [1])
     # https://www.mathworks.com/help/control/ref/evalfr.html
     g = (s - 1) / (s ^ 2 + s + 1)
     z, p, k = zeros_poles_gain(g)
-    @test k == -1
+    @test isapprox(k, -1, atol=1e-6)
     @test evaluate(g, 0.0) == k
     @test isapprox(evaluate(g, 1+im), 0.2308 + 0.1538im, atol=0.0001)
     g = 1.0 / (s^2 + 2*s + 1)
@@ -213,14 +214,12 @@ const s = TransferFunction([1, 0], [1])
     #  characteristic eqn.
     ###
     g_ol = 4 / (s + 3) / (s + 2) / (s + 1)
-    @test characteristic_polynomial(g_ol) == Poly([10.0, 11, 6, 1], :s)
+    @test isapprox(characteristic_polynomial(g_ol), Poly([10.0, 11, 6, 1], :s))
 
     ###
     #   order
     ###
-    g = (s + 1) / (s + 1) ^ 2
-    @test system_order(g) == (1, 2)
-    g = pole_zero_cancellation(g)
+    g = (s + 1) / (s + 1) ^ 2 # make sure it cancels the pole and zero.
     @test system_order(g) == (0, 1)
     @test system_order(first_order_system(1.0, 2.0)) == (0, 1)
     @test system_order(second_order_system(1.0, 2.0, 1.9)) == (0, 2)

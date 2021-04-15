@@ -2,7 +2,7 @@
 
 ## poles and zeros of a transfer function
 
-```
+```julia
 g = (s + 2) / (s^2 + 1/4)
 viz_poles_and_zeros(g)
 ```
@@ -11,7 +11,7 @@ viz_poles_and_zeros(g)
 
 ## response of a system to an input
 
-```
+```julia
 g = 4 / (4 * s ^ 2 + 0.8 * s + 1)
 U = 1 / s
 Y = g * U
@@ -23,7 +23,7 @@ viz_response(data, plot_title="SO underdamped step response")
 
 ## Nyquist diagram
 
-```
+```julia
 g = 1 / (s^2 + s + 1)
 nyquist_diagram(g)
 ```
@@ -32,7 +32,7 @@ nyquist_diagram(g)
 
 ## Bode plot
 
-```
+```julia
 g = 3 / (s + 1)
 bode_plot(g, log10_ω_min=-4.0, log10_ω_max=4.0, nb_pts=300)
 ```
@@ -45,7 +45,7 @@ see [`gain_phase_margins`](@ref) to compute the gain and phase margins and the c
 
 ## Root locus plot
 
-```
+```julia
 g_ol = 4 / (s + 3) / (s + 2) / (s + 1)
 root_locus(g_ol)
 ```
@@ -56,7 +56,7 @@ root_locus(g_ol)
 
 invoke the hipster plot theme used to make plots for this documentation by:
 
-```
+```julia
 using PyPlot
 PyPlot.matplotlib.style.use("https://raw.githubusercontent.com/SimonEnsemble/Controlz.jl/master/src/hipster.mplstyle")
 ```

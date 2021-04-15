@@ -88,6 +88,6 @@ under the hood, `simulate` converts the system passed to it into a state space O
 
 ```@docs
     simulate
+    TransferFunction
     interpolate
-    viz_response
 ```
