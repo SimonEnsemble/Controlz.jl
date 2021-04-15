@@ -117,11 +117,10 @@ z, p, gain = zeros_poles_gain(g)
 cancel pairs of identical poles and zeros in a transfer function as follows:
 
 ```julia
-g = s * (s+1) / ((s+3) * s * (s+1) ^ 2)
-pole_zero_cancellation(g) # 1 / ((s+3) * (s+1))
+pole_zero_cancellation(s * (s+1) / ((s+3) * s * (s+1) ^ 2)) # 1 / ((s+3) * (s+1))
 ```
 
-note that this cancellation is not done automatically.
+note that this cancellation is done automatically when multiplying, dividing, adding, and subtracting transfer functions.
 
 under the hood, we compare all pairs of poles and zeros to look for identical pairs via `isapprox`. after removing identical pole-zero pairs, we reconstruct the transfer function from the remaining poles, zeros, and k-factor. we ensure that the coefficients in the resulting rational function are real.
 

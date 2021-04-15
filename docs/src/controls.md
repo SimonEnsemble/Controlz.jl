@@ -72,7 +72,7 @@ U = gc * E # resulting controller output
 data_u = simulate(U, final_time) # controller output in the time domain
 ```
 
-a cheap way of getting the set point $y_{sp}(t)$ is:
+an easy way of getting the set point $y_{sp}(t)$ is:
 ```julia
 data_y_sp = simulate(Y_sp, final_time)
 ```
