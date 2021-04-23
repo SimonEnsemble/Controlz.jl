@@ -276,8 +276,13 @@ function pole_zero_cancellation(tf::TransferFunction; verbose::Bool=false)
     if verbose && sum(canceled_poles) != 0
         println("canceling the following poles and zeros: ", ps[canceled_poles])
     end
-
-    return zeros_poles_k(zs[.! canceled_zeros], ps[.! canceled_poles], k, time_delay=tf.time_delay)
+    
+    if sum(canceled_zeros) == 0
+        return tf
+    else    
+        # reconstruct
+        return zeros_poles_k(zs[.! canceled_zeros], ps[.! canceled_poles], k, time_delay=tf.time_delay)
+    end
 end
 
 """
