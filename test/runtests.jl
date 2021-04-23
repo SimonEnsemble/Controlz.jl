@@ -426,3 +426,24 @@ end
     @test isapprox(m.ω_c, 6.32, atol=0.01)
     @test isapprox(m.gain_margin, 5.397, atol=0.01)
 end
+
+@testset "closed loop stuff" begin
+    g_d =  3 / (s + 1) * exp(-5 * s)
+    g_ol = 18 / (100 * s + 1) * exp(-s)
+    cl = ClosedLoopTF(g_d, g_ol)
+    cls = Controlz.ClosedLoopTFStandard(cl)
+    @test cls.p_a ≈ Poly([3, 300], :s)
+    @test cls.p_b ≈ Poly([1, 101, 100], :s)
+    @test cls.p_c ≈ Poly([18, 18], :s)
+    @test cls.ϕ ≈ 1.0
+	@test cls.θ ≈ 5.0
+
+    # algebra
+
+    # run without a time delay to compare to other simulate function.
+    gp = 3 / (s+2)
+    gc = TransferFunction(PIController(1.0, 3.0))
+    data_old = simulate(gp*gc/(1+gp*gc), 10.0)
+    data_new = simulate(ClosedLoopTF(gp*gc, gp*gc), 10.0)
+    @test isapprox(data_old[:, :output], data_new[:, :output], atol=0.0001)
+end
