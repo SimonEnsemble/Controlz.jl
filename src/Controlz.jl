@@ -18,6 +18,7 @@ include("sim.jl")
 include("viz.jl")
 include("controls.jl")
 include("margins.jl")
+include("closed_loops.jl")
 include("show.jl")
 
 export
@@ -35,5 +36,7 @@ export
     # controlz.jl
     PController, PIController, PIDController,
     # margins.jl
-    gain_phase_margins
+    gain_phase_margins,
+    # closedloops.jl
+    ClosedLoopTF
 end
