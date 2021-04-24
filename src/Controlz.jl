@@ -38,5 +38,5 @@ export
     # margins.jl
     gain_phase_margins,
     # closedloops.jl
-    ClosedLoopTF
+    ClosedLoopTransferFunction
 end

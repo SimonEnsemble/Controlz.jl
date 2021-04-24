@@ -36,18 +36,18 @@ with skills in block diagram algebra, we can use [`simulate`](@ref) to simulate 
 
 ![](assets/simple_servo.png)
 
-let's specify $g_c(s)$ as a PI controller and $g_p(s)$ as a first-order system. the former describes the controller output responds to the error signal. the latter describes how the process responds to inputs-- here, the process input is provided by the controller.
+let's specify $g_c(s)$ as a PI controller and $g_u(s)$ as a first-order system. the former describes the controller output responds to the error signal. the latter describes how the process responds to inputs-- here, the process input is provided by the controller.
 
 ```julia
 pic = PIController(1.0, 1.0) 
 gc = TransferFunction(pic) # controller transfer function
-gp = 3 / (4 * s + 1) # process transfer function
+gu = 3 / (4 * s + 1) # process transfer function
 ```
 
 via block diagram algebra, we can solve for the transfer function governing the response to set point changes.
 
 ```julia
-g_ol = gc * gp # open-loop transfer function
+g_ol = gc * gu # open-loop transfer function
 
 g_servo = g_ol / (1 + g_ol) # transfer function for servo response
 ```
@@ -89,6 +89,63 @@ U_Iaction = Kc * τI / s * E # I-action
 data_u_Paction = simulate(U_Paction, final_time)
 data_u_Iaction = simulate(U_Iaction, final_time)
 ```
+
+## feedback loops with time delays
+
+when time delays are involved, we must use the special implementation of a transfer function, `ClosedLoopTransferFunction`. we provide an example below.
+
+![](assets/full_feedback_control_system.png)
+
+suppose the transfer functions in the block diagram are as defined below.
+
+```julia
+# PI controller transfer function
+pic = PIController(1.0, 2.0)
+gc = TransferFunction(pic)
+
+# process, sensor dynamics
+gu = 2 / (4 * s + 1) * exp(-0.5 * s)
+gm = 1 / (s + 1) * exp(-0.75 * s)
+gd = 6 / (6 * s + 1)
+```
+
+we define the closed-loop transfer functions for the response to set point changes $y_{sp}(t)$ and disturbances $d(t)$ as below:
+
+```julia
+# open-loop transfer function
+g_ol = gc * gu * gm
+
+# closed-loop transfer function for regulator response
+gr = ClosedLoopTransferFunction(gd, g_ol)
+
+# closed-loop transfer function for servo response
+gs = ClosedLoopTransferFunction(g_ol, g_ol)
+```
+
+where `gr` and `gs` represent the closed-loop transfer functions $g_r(s)$ and $g_s(s)$ respectively:
+
+$$g_r(s)=\dfrac{Y(s)}{D(s)}=\dfrac{g_d(s)}{1+g_c(s)g_u(s)g_m(s)}$$
+
+$$g_s(s)=\dfrac{Y(s)}{Y_{sp}(s)}=\dfrac{g_c(s)g_u(s)g_m(s)}{1+g_c(s)g_u(s)g_m(s)}$$
+
+we can then simulate responses to set point changes as:
+
+```julia
+Ysp = 1 / s # unit step set point change
+Y = gs * Ysp
+data = simulate(Y, 50.0)
+```
+
+![](closed_loop_servo_time_delay.png)
+
+and to disturbances as:
+
+```julia
+D = 1 / s # unit step in disturbance variable d
+Y = gr * D
+data = simulate(Y, 50.0)
+```
+
 
 ```@docs
     PController

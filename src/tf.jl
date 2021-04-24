@@ -7,13 +7,15 @@ import Base.*, Base./, Base.+, Base.-, Base.==, Base.^, Base.exp, Base.isapprox
 Construct a transfer function representing a linear, time-invariant system.
 
 # Example
-construct the transfer function:
+to construct the transfer function
 
 ```math
 G(s) = \frac{4e^{-2.2s}}{2s+1}
 ```
 
-```
+in Julia:
+
+```julia
 tf = TransferFunction([4], [2, 1], 2.2)
 ```
 
@@ -81,7 +83,10 @@ end
 
 function +(tf1::TransferFunction, tf2::TransferFunction)
     if (tf1.time_delay != tf2.time_delay)
-        error("cannot add two transfer functions that have different time delays")
+        error("""we cannot add two transfer functions with two different time delays.
+
+        if you are trying to construct a closed-loop transfer function with a time delay,
+        instead use `ClosedLoopTransferFunction`.""")
     end
     g = TransferFunction(tf1.numerator * tf2.denominator + tf1.denominator * tf2.numerator,
                             tf1.denominator * tf2.denominator,
@@ -150,13 +155,31 @@ _k(tf::TransferFunction) = tf.numerator[end] / tf.denominator[end]
 @doc raw"""
     K = zero_frequency_gain(tf)
 
-Compute the (signed) zero frequency gain of a transfer function $g(s)$, which is the value of the transfer function at $s=0$.
-"It represents the ratio of the steady state value of the output with respect to a step input" [source](http://www.cds.caltech.edu/~murray/books/AM05/pdf/am06-xferfcns_16Sep06.pdf)
+compute the (signed) zero frequency gain of a transfer function $g(s)$, which is:
 
-# Arguments
+```math
+K := \lim_{s\rightarrow 0} G(s)
+```
+    
+the zero-frequency gain "represents the ratio of the steady state value of the output with respect to a step input" [source](http://www.cds.caltech.edu/~murray/books/AM05/pdf/am06-xferfcns_16Sep06.pdf)
+
+# example
+
+```julia
+g = 5 / (3 * s + 1)
+K = zero_frequency_gain(g) # K = 5.0
+```
+
+# arguments
 * `tf::TransferFunction`: the transfer function
+
+# returns
+* `K::Float64`: the zero-frequency gain of the transfer function
 """
-zero_frequency_gain(tf::TransferFunction) = evaluate(tf, 0.0)
+function zero_frequency_gain(tf::TransferFunction)
+    tf_simplified = pole_zero_cancellation(tf)
+    return evaluate(tf_simplified, 0.0)
+end
 
 @doc raw"""
     # compute the zeros, poles, and k-factor of a transfer function

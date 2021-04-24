@@ -57,7 +57,7 @@ simulate the output $y(t)$ of an LTI system, given the Laplace transform of the 
 in other words, `simulate` inverts an expression in the frequency domain into the time domain.
 
 # arguments
-* `Y::TransferFunction`: the Laplace transform of the output $y(t)$. usually formed by $g(s)U(s)$, where $U(s)$ is the Laplace transform of the input and $g(s)$ is the transfer function governing the dynamics of the system.
+* `Y::Union{TransferFunction, ClosedLoopTransferFunction}`: the Laplace transform of the output $y(t)$. usually formed by $g(s)U(s)$, where $U(s)$ is the Laplace transform of the input and $g(s)$ is the transfer function governing the dynamics of the system.
 * `final_time::Tuple{Float64, Float64}`: the duration over which to simulate the output of the LTI system, starting at time zero.
 * `nb_time_points::Int=100`: the number of time points at which to save the solution $y(t)$
 
@@ -66,7 +66,7 @@ two time points preceding $t=0$ are included to illustrate that it is assumed $y
 # returns
 * `data::DataFrame`: data frame containing two columns: `:t` for time $t$ and `:output` for $y(t)$. each row corresponds to a $(t_i, y(t_i))$ pair. i.e., row `i` of the `:t` column is time $i$, $t_i$, and row `i` of the `:output` column is $y_i=y(t_i)$. access the columns by `data[:, :t]` and `data[:, :output]`.
 
-# example
+# examples
 simulate the first order step response to a step, given the Laplace transform of the output, `Y`:
 
 ```
@@ -86,7 +86,6 @@ function simulate(Y::TransferFunction, final_time::Float64; nb_time_points::Int=
     # coeffs on denominator, numerator polynomial
     a_i(i::Int) = Y.denominator[i]
     b_i(i::Int) = Y.numerator[i]
-    n = degree(Y.denominator)
 
     # convert tf to state space form
     A, B, C = tf_to_ss(Y)
