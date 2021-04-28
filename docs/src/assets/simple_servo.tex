@@ -28,7 +28,7 @@
 
 % The block diagram code is probably more verbose than necessary
 \begin{tikzpicture}[auto, node distance=1cm,>=latex']
-    \node [block, node distance=1.5cm,label=process] (Gp) {$g_p(s)$};
+    \node [block, node distance=1.5cm,label=process] (Gp) {$g_u(s)$};
     \node [block, left of=Gp, node distance=3cm, label=controller] (Gc) {$g_c(s)$};
     \node [circ, , line width=0.5mm, label={[label distance=-4.75mm]270:$-$},label={[label distance=-4.75mm]180:$+$}, minimum size=8mm, left of=Gc, node distance=2.5cm] (comparator) {};
     \node [input, node distance=2cm, left of=comparator] (Ysp) {};

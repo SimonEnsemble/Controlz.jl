@@ -1,33 +1,47 @@
 import Base.*, Base./
 
 """
-closed-loop system with output Y and input D related as:
+a closed-loop transfer function that relates an output `Y` and an input `U` in a feedback loop.
 
+the resulting closed-loop transfer function is:
+
+```
  Y      top
 --- = --------
- D    1 + g_ol
+ U    1 + g_ol
+```
 
-* `top::TransferFunction`
-* `g_ol::TransferFunction`
+# example
+
+```julia
+g_ol = 4 / (s + 1) * 2 / (s + 2)
+top = 5 / (s + 4)
+g = ClosedLoopTransferFunction(top, g_ol)
+```                                             
+
+# Arguments
+* `top::TransferFunction`: numerator
+* `g_ol::TransferFunction`: open-loop transfer function
 """
-struct ClosedLoopTF
+struct ClosedLoopTransferFunction
 	top::TransferFunction
 	g_ol::TransferFunction
 end
 
 # algebra
-*(tf_cl::ClosedLoopTF, tf::TransferFunction) = ClosedLoopTF(tf_cl.top * tf, tf_cl.g_ol)
-*(tf::TransferFunction, tf_cl::ClosedLoopTF) = *(tf_cl::ClosedLoopTF, tf::TransferFunction)
-*(tf_cl::ClosedLoopTF, x::Number) = ClosedLoopTF(tf_cl.top * x, tf_cl.g_ol)
-*(x::Number, tf_cl::ClosedLoopTF) = *(tf_cl::ClosedLoopTF, x::Number)
-/(tf_cl::ClosedLoopTF, tf::TransferFunction) = ClosedLoopTF(tf_cl.top / tf, tf_cl.g_ol)
-/(tf_cl::ClosedLoopTF, x::Number) = ClosedLoopTF(tf_cl.top / x, tf_cl.g_ol)
+*(tf_cl::ClosedLoopTransferFunction, tf::TransferFunction) = ClosedLoopTransferFunction(tf_cl.top * tf, tf_cl.g_ol)
+*(tf::TransferFunction, tf_cl::ClosedLoopTransferFunction) = *(tf_cl::ClosedLoopTransferFunction, tf::TransferFunction)
+*(tf_cl::ClosedLoopTransferFunction, x::Number) = ClosedLoopTransferFunction(tf_cl.top * x, tf_cl.g_ol)
+*(x::Number, tf_cl::ClosedLoopTransferFunction) = *(tf_cl::ClosedLoopTransferFunction, x::Number)
+/(tf_cl::ClosedLoopTransferFunction, tf::TransferFunction) = ClosedLoopTransferFunction(tf_cl.top / tf, tf_cl.g_ol)
+/(tf_cl::ClosedLoopTransferFunction, x::Number) = ClosedLoopTransferFunction(tf_cl.top / x, tf_cl.g_ol)
 
 # representation of a closed loop system in standard form.
+# useful for converting into state space representation.
 #        p_a(s) e^ {-θs}
 #  ---------------------------
 #   p_b(s) + p_c(s) e^ {-ϕs}
-struct ClosedLoopTFStandard
+struct CLTFStandard
     # numerator
     p_a::Poly
     θ::Union{Float64, Int}
@@ -37,7 +51,7 @@ struct ClosedLoopTFStandard
     ϕ::Union{Float64, Int}
 end
 
-function ClosedLoopTFStandard(cl::ClosedLoopTF)
+function CLTFStandard(cl::ClosedLoopTransferFunction)
     # numerator
     p_a = cl.top.numerator * cl.g_ol.denominator
     θ = cl.top.time_delay
@@ -45,16 +59,16 @@ function ClosedLoopTFStandard(cl::ClosedLoopTF)
     p_b = cl.g_ol.denominator * cl.top.denominator
     p_c = cl.g_ol.numerator   * cl.top.denominator
     ϕ = cl.g_ol.time_delay
-    return ClosedLoopTFStandard(p_a, θ, p_b, p_c, ϕ)
+    return CLTFStandard(p_a, θ, p_b, p_c, ϕ)
 end
 
-order(cl::ClosedLoopTFStandard) = degree(cl.p_b)
-order(cl::ClosedLoopTF) = degree(ClosedLoopTFStandard(cl).p_b)
+order(cl::CLTFStandard) = degree(cl.p_b)
+order(cl::ClosedLoopTransferFunction) = degree(CLTFStandard(cl).p_b)
 
-function strictly_proper(cl::ClosedLoopTFStandard)
+function strictly_proper(cl::CLTFStandard)
     return degree(cl.p_b) > max(degree(cl.p_a), degree(cl.p_c))
 end
-strictly_proper(cl::ClosedLoopTF) = strictly_proper(ClosedLoopTFStandard(cl))
+strictly_proper(cl::ClosedLoopTransferFunction) = strictly_proper(CLTFStandard(cl))
 
 """
  dx
@@ -64,7 +78,7 @@ y(t) = D * x(t)
 we compute the matrices A, B, C, D here.
 only works if strictly proper.
 """
-function tf_to_ss(cl::ClosedLoopTFStandard)
+function tf_to_ss(cl::CLTFStandard)
     @assert strictly_proper(cl) "closed-loop system not strictly proper!"
 
     a_i(i::Int) = cl.p_a[i]
@@ -97,8 +111,9 @@ function tf_to_ss(cl::ClosedLoopTFStandard)
     return A, B, C, D
 end
 
-function simulate(cl::ClosedLoopTF, final_time::Float64; nb_time_points::Int=100)
-	cls = ClosedLoopTFStandard(cl)
+# see sim.jl for doc string
+function simulate(cl::ClosedLoopTransferFunction, final_time::Float64; nb_time_points::Int=100)
+	cls = CLTFStandard(cl)
 	
     if ! strictly_proper(cls)
         error("closed loop system is not strictly proper...")

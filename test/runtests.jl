@@ -46,6 +46,11 @@ const s = TransferFunction([1, 0], [1])
     g = TransferFunction([2], [3, 4])
     @test isapprox(5 * g, TransferFunction([10], [3, 4]))
 
+    # gain
+    @test isapprox(zero_frequency_gain(5 / (s + 1)), 5.0)
+    @test isapprox(zero_frequency_gain(5 / (s + 1) / (4 * s + 2)), 5.0 / 2)
+    @test isapprox(zero_frequency_gain(5 * s / (s + 1) / s), 5.0)
+
     ###
     #  add
     ###
@@ -125,7 +130,7 @@ const s = TransferFunction([1, 0], [1])
     # G(s) = s + 2 / (s^2 - 4)
     tf = TransferFunction([1, 2], [1, 0, -4])
     z, p, k = zeros_poles_gain(tf)
-    @test k == -1/2
+    @test isapprox(k, -1/2, atol=1e-6)
     @test z == [-2.0]
     @test isapprox(p, [-2.0, 2.0])
 
@@ -430,20 +435,29 @@ end
 @testset "closed loop stuff" begin
     g_d =  3 / (s + 1) * exp(-5 * s)
     g_ol = 18 / (100 * s + 1) * exp(-s)
-    cl = ClosedLoopTF(g_d, g_ol)
-    cls = Controlz.ClosedLoopTFStandard(cl)
+    cl = ClosedLoopTransferFunction(g_d, g_ol)
+    
+    # test conversion into standard form
+    cls = Controlz.CLTFStandard(cl)
     @test cls.p_a ≈ Poly([3, 300], :s)
     @test cls.p_b ≈ Poly([1, 101, 100], :s)
     @test cls.p_c ≈ Poly([18, 18], :s)
     @test cls.ϕ ≈ 1.0
 	@test cls.θ ≈ 5.0
 
+    @test Controlz.order(cl) == 2
+    @test Controlz.strictly_proper(cl)
+    @test ! strictly_proper(ClosedLoopTransferFunction(g_d, g_ol * (4 * s + 1)))
+
     # algebra
+    cl2 = cl * 4 / s
+    @test cl2.g_ol == cl.g_ol
+    @test cl2.top == cl.top * 4 / s
 
     # run without a time delay to compare to other simulate function.
-    gp = 3 / (s+2)
+    gp = 3 / (s + 2)
     gc = TransferFunction(PIController(1.0, 3.0))
-    data_old = simulate(gp*gc/(1+gp*gc), 10.0)
-    data_new = simulate(ClosedLoopTF(gp*gc, gp*gc), 10.0)
+    data_old = simulate(gp * gc / (1 + gp * gc), 10.0)
+    data_new = simulate(ClosedLoopTransferFunction(gp * gc, gp * gc), 10.0)
     @test isapprox(data_old[:, :output], data_new[:, :output], atol=0.0001)
 end

@@ -201,10 +201,46 @@ g = 1.0 / (8 * s^2 + 0.8 * s + 2)
 ξ = damping_coefficient(g) # 0.1
 ```
 
+## closed-loop transfer functions
+
+to represent a closed-loop transfer function, we use a special transfer function type, `ClosedLoopTransferFunction`.
+this is only necessary when time delays are involved, but it works for when time delays are *not* involved as well.
+
+![](assets/full_feedback_control_system.png)
+
+using block diagram algebra, we find the closed-loop transfer functions that relate changes in the output $y$ to changes in the set point $y_{sp}$ and to changes in the disturbance $d$:
+
+$$g_r(s)=\dfrac{Y(s)}{D(s)}=\dfrac{g_d(s)}{1+g_c(s)g_u(s)g_m(s)}$$
+
+$$g_s(s)=\dfrac{Y(s)}{Y_{sp}(s)}=\dfrac{g_c(s)g_u(s)g_m(s)}{1+g_c(s)g_u(s)g_m(s)}$$
+
+we construct these two closed-loop transfer functions as `gr` and `gs` as follows.
+
+```julia
+# PI controller transfer function
+pic = PIController(1.0, 2.0)
+gc = TransferFunction(pic)
+
+# process, sensor dynamics
+gu = 2 / (4 * s + 1) * exp(-0.5 * s)
+gm = 1 / (s + 1) * exp(-0.1 * s)
+gd = 6 / (6 * s + 1)
+
+# open-loop transfer function
+g_ol = gc * gu * gm
+
+# closed-loop transfer function for regulator response
+gr = ClosedLoopTransferFunction(gd, g_ol)
+
+# closed-loop transfer function for servo response
+gs = ClosedLoopTransferFunction(g_ol, g_ol)
+```
+
 ## detailed docs
 
 ```@docs
     TransferFunction
+    ClosedLoopTransferFunction
     zero_frequency_gain
     zeros_poles_gain
     zeros_poles_k
