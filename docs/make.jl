@@ -17,3 +17,6 @@ makedocs(
     format = Documenter.HTML(assets = ["assets/flux.css"])
 )
 
+deploydocs(
+    repo = "github.com/SimonEnsemble/Controlz.jl.git"
+)

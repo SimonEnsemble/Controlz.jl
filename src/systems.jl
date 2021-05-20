@@ -3,7 +3,7 @@
 
 Determine the characteristic polynomial associated with open loop transfer function `g_ol`.
 
-The characteristic polynomial is $1+g_ol(s)$. The roots of the characteristic polynomial determine the character of the response of the closed loop system to bounded inputs.
+The characteristic polynomial is $1+g_{ol}(s)$. The roots of the characteristic polynomial determine the character of the response of the closed loop system to bounded inputs.
 
 # Arguments
 * `g_ol::TransferFunction`: open loop transfer function
