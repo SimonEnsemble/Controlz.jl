@@ -21,7 +21,7 @@ notifications:
     email: true
 
 script:
-  - julia --project --check-bounds=yes -e 'using Pkg; Pkg.activate(); Pkg.instantiate(); Pkg.test("Controlz")'
+  - julia --project --check-bounds=yes -e 'using Pkg; Pkg.activate(); Pkg.instantiate(); Pkg.test()'
 
 after_success:
     - julia --project -e 'import Pkg; Pkg.add("Documenter")'
