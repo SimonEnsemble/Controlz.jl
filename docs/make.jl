@@ -18,5 +18,6 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/SimonEnsemble/Controlz.jl.git"
+    repo = "github.com/SimonEnsemble/Controlz.jl.git",
+    devbranch = "main"
 )
