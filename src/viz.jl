@@ -153,7 +153,7 @@ function root_locus(g_ol::TransferFunction;
             color="k", s=50, zorder=100)
     # plot zeros; corresponds to |Kc| → ∞
     if length(z) > 0
-        scatter(real.(z), imag.(z), marker="o", label="poles",
+        scatter(real.(z), imag.(z), marker="o", label="zeros",
                 color="k", s=50, zorder=100, facecolor="None")
     end
     # plot roots traversing plane
@@ -165,6 +165,7 @@ function root_locus(g_ol::TransferFunction;
     ylabel("Im")
     draw_axes()
     title("root locus")
+    legend()
     tight_layout()
 end
 
@@ -193,7 +194,7 @@ function bode_plot(g::TransferFunction; log10_ω_min::Float64=-3.0, log10_ω_max
     end
 
     fig, axs = subplots(2, 1, sharex=true, figsize=(8, 7))
-    axs[1].plot(ω, abs.(g_iω), color="C1")
+    axs[1].plot(ω, abs.(g_iω), color="C0")
     axs[1].set_ylabel(L"$|g(i\omega)|$")
     axs[1].set_title("Bode plot")
     axs[1].set_xscale("log")
