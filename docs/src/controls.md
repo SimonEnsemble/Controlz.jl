@@ -119,14 +119,14 @@ g_ol = gc * gu * gm
 gr = ClosedLoopTransferFunction(gd, g_ol)
 
 # closed-loop transfer function for servo response
-gs = ClosedLoopTransferFunction(g_ol, g_ol)
+gs = ClosedLoopTransferFunction(gc * gu, g_ol)
 ```
 
 where `gr` and `gs` represent the closed-loop transfer functions $g_r(s)$ and $g_s(s)$ respectively:
 
 $$g_r(s)=\dfrac{Y(s)}{D(s)}=\dfrac{g_d(s)}{1+g_c(s)g_u(s)g_m(s)}$$
 
-$$g_s(s)=\dfrac{Y(s)}{Y_{sp}(s)}=\dfrac{g_c(s)g_u(s)g_m(s)}{1+g_c(s)g_u(s)g_m(s)}$$
+$$g_s(s)=\dfrac{Y(s)}{Y_{sp}(s)}=\dfrac{g_c(s)g_u(s)}{1+g_c(s)g_u(s)g_m(s)}$$
 
 we can then simulate responses to set point changes as:
 
@@ -145,7 +145,6 @@ D = 1 / s # unit step in disturbance variable d
 Y = gr * D
 data = simulate(Y, 50.0)
 ```
-
 
 ```@docs
     PController
