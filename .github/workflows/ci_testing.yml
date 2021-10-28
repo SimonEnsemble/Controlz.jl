@@ -40,8 +40,10 @@ jobs: # jobs run in parallel, unless a dependency is specified
       - uses: julia-actions/setup-julia@latest
         with:
           version: ${{env.julia_version}}
-      - name: build
-        run: julia --project ./quick_setup.jl
+      - name: build and install dependencies
+        run: |
+          julia --project ./quick_setup.jl
+          julia --project -e 'import Pkg; Pkg.add("Documenter")'
       - name: deploy
         run: julia --project ./docs/make.jl
         env: # step-specific environment variables
