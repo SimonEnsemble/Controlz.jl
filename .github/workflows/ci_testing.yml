@@ -4,9 +4,9 @@ name: Build # the name of the GitHub Action (will be displayed on repo)
 
 on: # when to run this action
   push:
-    branches: [master] # run when a commit is made to the 'master' branch
+    branches: [main] # run when a commit is made to the 'master' branch
   pull_request:
-    branches: [master] # run when a PR is made against the 'master' branch
+    branches: [main] # run when a PR is made against the 'master' branch
   workflow_dispatch: # run when a button is pressed on the repo Actions page
   
 concurrency: # only allow one copy of the action to run at a time; new runs cancel old ones
