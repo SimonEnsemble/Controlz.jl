@@ -26,10 +26,10 @@ jobs: # jobs run in parallel, unless a dependency is specified
       - uses: julia-actions/setup-julia@latest # a GitHub action that installs Julia on the VM
         with: # arguments to the setup-julia action
           version: ${{env.julia_version}} # get Julia at the version specified in `env` above
-      - name: install matplotlib
-        run: julia --project -e 'import Pkg; Pkg.add("Conda"); using Conda; Conda.add("matplotlib")'
-      - name: build and test
-        run: julia --project -e 'import Pkg; Pkg.instantiate(); Pkg.test()'
+      - name: build
+        run: julia --project ./quick_setup.jl
+      - name: test
+        run: julia --project -e 'import Pkg; Pkg.test()'
       
   
   deploy-docs: # will compile and upload the docs pages
@@ -40,10 +40,8 @@ jobs: # jobs run in parallel, unless a dependency is specified
       - uses: julia-actions/setup-julia@latest
         with:
           version: ${{env.julia_version}}
-      - name: install matplotlib
-        run: julia --project -e 'import Pkg; Pkg.add("Conda"); using Conda; Conda.add("matplotlib")'
       - name: build
-        run: julia --project -e 'import Pkg; Pkg.instantiate()'
+        run: julia --project ./quick_setup.jl
       - name: deploy
         run: julia --project ./docs/make.jl
         env: # step-specific environment variables
