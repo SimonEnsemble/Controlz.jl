@@ -17,9 +17,9 @@ e.g. `xlim([0, 1])` can be applied after `viz_response`.
 
 # Arguments
 * `data::DataFrame`: data frame of time series data, containing a `:t` column for times and `:output` column for the outputs.
-* `plot_title::Union{String, LaTeXString}`: title of plot
-* `plot_xlabel::Union{String, LaTeXString}`: x-label
-* `plot_ylabel::Union{String, LaTeXString}`: y-label
+* `plot_title::String`: title of plot
+* `plot_xlabel::String`: x-label
+* `plot_ylabel::String`: y-label
 * `savename::Union{Nothing, String}`: filename to save as a figure in .png format (dpi 250).
 
 # Example
@@ -31,13 +31,13 @@ viz_response(data)
 ```
 """
 function viz_response(data::DataFrame;
-        plot_title::Union{String, LaTeXString}="", 
-        plot_xlabel::Union{String, LaTeXString}=L"time, $t$",
-        plot_ylabel::Union{String, LaTeXString}=L"output, $y(t)$",
+        plot_title::String="", 
+        plot_xlabel::String=L"time, $t$",
+        plot_ylabel::String=L"output, $y(t)$",
         savename::Union{Nothing, String}=nothing
     )
     
-    figure()
+    fig = Figure()
     plot(data[:, :t], data[:, :output], zorder=100)
     xlabel(plot_xlabel)
     ylabel(plot_ylabel)
@@ -61,7 +61,7 @@ plot the zeros and poles of the transfer function `tf` in the complex plane.
 function viz_poles_and_zeros(tf::TransferFunction)
     z, p, k = zeros_poles_gain(tf)
     
-    figure()
+    fig = Figure()
     scatter(real.(z), imag.(z), marker="o", label="zeros", color="C1", zorder=100, s=50)
     scatter(real.(p), imag.(p), marker="x", label="poles", color="C2", s=50, zorder=100)
     legend()
@@ -85,7 +85,7 @@ function nyquist_diagram(tf::TransferFunction; nb_pts::Int=500, ω_max::Float64=
     g_iω_neg = [evaluate(tf, ω_i * im) for ω_i in ω_neg]
     g_iω_pos = [evaluate(tf, ω_i * im) for ω_i in ω_pos]
 
-    figure()
+    fig = Figure()
     plot(real(g_iω_neg), imag(g_iω_neg), zorder=100)
     plot(real(g_iω_pos), imag(g_iω_pos), zorder=100)
     draw_axes()
@@ -147,7 +147,7 @@ function root_locus(g_ol::TransferFunction;
         end
     end
 
-    figure()
+    fig = Figure()
     # plot poles; corresponds to Kc = 0
     scatter(real.(p), imag.(p), marker="x", label="poles",
             color="k", s=50, zorder=100)
@@ -225,15 +225,15 @@ the .gif is saved as a file `savename`.
 
 # Arguments
 * `data::DataFrame`: data frame of time series data, containing a `:t` column for times and `:output` column for the outputs.
-* `plot_title::Union{String, LaTeXString}`: title of plot
-* `plot_xlabel::Union{String, LaTeXString}`: x-label
-* `plot_ylabel::Union{String, LaTeXString}`: y-label
+* `plot_title::String`: title of plot
+* `plot_xlabel::String`: x-label
+* `plot_ylabel::String`: y-label
 * `savename::String`: filename to save as a .gif. .gif extension automatically appended if not provided.
 """
 function mk_gif(t::Array{Float64}, y::Array{Float64};
-        plot_title::Union{String, LaTeXString}="",
-        plot_xlabel::Union{String, LaTeXString}=L"time, $t$",
-        plot_ylabel::Union{String, LaTeXString}=L"output, $y(t)$",
+        plot_title::String="",
+        plot_xlabel::String=L"time, $t$",
+        plot_ylabel::String=L"output, $y(t)$",
         savename::String="response.gif"
     )
     if length(t) > 999

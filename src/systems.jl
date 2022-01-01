@@ -9,7 +9,7 @@ The characteristic polynomial is $1+g_{ol}(s)$. The roots of the characteristic 
 * `g_ol::TransferFunction`: open loop transfer function
 
 # Returns
-a polynomial of type `Poly`
+a polynomial of type `Polynomial`
 
 # Example
 ```

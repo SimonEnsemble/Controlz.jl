@@ -20,23 +20,23 @@ tf = TransferFunction([4], [2, 1], 2.2)
 ```
 
 # Attributes
-* `numerator::Poly`: the polynomial in the numerator of the transfer function
-* `denominator::Poly`: the polynomial in the denominator of the transfer function
+* `numerator::Polynomial`: the polynomial in the numerator of the transfer function
+* `denominator::Polynomial`: the polynomial in the denominator of the transfer function
 * `time_delay::Float64`: the associated time delay
 """
 struct TransferFunction
-    numerator::Poly
-    denominator::Poly
+    numerator::Polynomial
+    denominator::Polynomial
     time_delay::Union{Float64, Int}
 end
 
 ArrayOfReals = Union{Array{Float64, 1}, Array{Int64, 1}}
 
 TransferFunction(num::ArrayOfReals, den::ArrayOfReals) = 
-    TransferFunction(Poly(reverse(num), :s), Poly(reverse(den), :s), 0.0)
+    TransferFunction(Polynomial(reverse(num), :s), Polynomial(reverse(den), :s), 0.0)
 
 TransferFunction(num::ArrayOfReals, den::ArrayOfReals, td::Union{Float64, Int}) = 
-    TransferFunction(Poly(reverse(num), :s), Poly(reverse(den), :s), td)
+    TransferFunction(Polynomial(reverse(num), :s), Polynomial(reverse(den), :s), td)
 
 const s = TransferFunction([1, 0], [1])
 
@@ -201,19 +201,17 @@ zeros_poles_k(tf::TransferFunction) = _zeros(tf), _poles(tf), _k(tf)
 function zeros_poles_k(zeros::Array, poles::Array, k::Union{Float64, Int};
                        time_delay::Union{Int64, Float64}=0)
     # construct numerator polynomial 
-    top = length(zeros) == 0 ? Poly(1.0, :s) : poly(zeros, :s)
+    top = length(zeros) == 0 ? Polynomial(1.0, :s) : fromroots(zeros, var=:s)
     
     # construct denominator polynomial
-    bottom = length(poles) == 0 ? Poly(1.0, :s) : poly(poles, :s)
-    
-    # ^ poly is from Polynomails.jl and means "construct polynomial with these roots"
+    bottom = length(poles) == 0 ? Polynomial(1.0, :s) : fromroots(poles, var=:s)
 
     # owing to numerical errors, the coeff's could be imaginary with tiny imaginary parts
     #  let's check that the imaginary parts are tiny, then convert the coefficients to real.
-    @assert maximum(abs.(imag.(top.a))) < 1e-6
-    @assert maximum(abs.(imag.(bottom.a))) < 1e-6
-    top = Poly(real.(top.a), :s) # reconstruct a polynomial with real coeffs
-    bottom = Poly(real.(bottom.a), :s)
+    @assert maximum(abs.(imag.(top.coeffs))) < 1e-6
+    @assert maximum(abs.(imag.(bottom.coeffs))) < 1e-6
+    top = Polynomial(real.(top.coeffs), :s) # reconstruct a polynomial with real coeffs
+    bottom = Polynomial(real.(bottom.coeffs), :s)
     
     return TransferFunction(k * top, bottom, time_delay)
 end
@@ -242,7 +240,7 @@ evaluate(tf, 2.0 + 3.0im) # also takes imaginary numbers as input
 ```
 """
 function evaluate(tf::TransferFunction, z::Number)
-    return polyval(tf.numerator, z) / polyval(tf.denominator, z) * exp(-tf.time_delay * z)
+    return tf.numerator(z) / tf.denominator(z) * exp(-tf.time_delay * z)
 end
 
 """

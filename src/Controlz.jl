@@ -2,14 +2,14 @@ module Controlz
 
 using Polynomials
 using DifferentialEquations
-using PyPlot
 using Interpolations
 using Printf
 using Roots
 using DataFrames
+using CairoMakie
 
-# hipster plot theme
-PyPlot.matplotlib.style.use(normpath(joinpath(pathof(Controlz), "..", "hipster.mplstyle")))
+# TODO set plot theme
+include("beavs_theme.jl")
 
 include("tf.jl")
 include("special_tfs.jl")

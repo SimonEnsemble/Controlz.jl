@@ -1,7 +1,7 @@
 """
 Convert a polynomial to a string for printing.
 """
-function poly_to_string(poly::Poly)
+function poly_to_string(poly::Polynomial)
     io = IOBuffer();
     printpoly(io, poly, descending_powers=true)
     return String(take!(io))
