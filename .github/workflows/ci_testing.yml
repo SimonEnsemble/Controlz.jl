@@ -32,6 +32,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
+
+      - name: set up documenter
+        run: julia --project -e 'import Pkg; Pkg.add("Documenter")'
       
       - name: build and deploy docs
         run: julia --project --color=yes ./docs/make.jl
