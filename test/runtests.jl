@@ -430,6 +430,12 @@ end
     m = gain_phase_margins(g_ol)
     @test isapprox(m.ω_c, 6.32, atol=0.01)
     @test isapprox(m.gain_margin, 5.397, atol=0.01)
+
+    # check asymptote behavior
+    g_ol = 1 / (s + 1) # ω_c d.n.e.
+    m = gain_phase_margins(g_ol)
+    @test isnan(m.ω_c)
+    @test isnan(m.gain_margin)
 end
 
 @testset "closed loop stuff" begin
