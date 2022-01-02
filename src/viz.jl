@@ -69,7 +69,7 @@ function viz_poles_and_zeros(tf::TransferFunction; savename::Union{Nothing, Stri
     fig = Figure()
 	ax  = Axis(fig[1, 1], xlabel="Re", ylabel="Im", title="poles and zeros")
     draw_axes(ax)
-	scatter!(real.(z), imag.(z), marker=:o, label="zeros", markersize=15)
+	scatter!(real.(z), imag.(z), marker=:circle, label="zeros", markersize=15)
 	scatter!(real.(p), imag.(p), marker=:x, label="poles", markersize=15)
 	axislegend()
     if ! isnothing(savename)
@@ -165,7 +165,7 @@ function root_locus(g_ol::TransferFunction;
     scatter!(real.(p), imag.(p), marker=:x, label="poles", markersize=15, color="black")
     # plot zeros; corresponds to |Kc| → ∞
     if length(z) > 0
-        scatter!(real.(z), imag.(z), marker=:o, label="zeros", markersize=15, color="black")
+        scatter!(real.(z), imag.(z), marker=:circle, label="zeros", markersize=15, color="black")
     end
     # plot roots traversing plane
     for i = 1:length(p)
