@@ -12,18 +12,18 @@ pass the output $Y(s)$ in the frequency domain into the function `simulate` to i
 ```julia
 g = 4 / (4 * s ^ 2 + 0.8 * s + 1) # second order transfer function, underdamped
 
-U = 1 / s # unit step input
-Y = g * U # system output
+U = 1 / s                         # unit step input
+Y = g * U                         # system output
 
-data = simulate(Y, 50.0) # simulate until t = 50, returns DataFrame
-data[:, :t]      # array of times, tᵢ's
-data[:, :output] # array of outputs, yᵢ's ≈ y(tᵢ)'s
+data = simulate(Y, 50.0)          # simulate until t = 50, returns DataFrame
+data[:, :t]                       # array of times, tᵢ's
+data[:, :output]                  # array of outputs, yᵢ's ≈ y(tᵢ)'s
 ```
 
-we can then plot the time series via:
+then plot the time series via:
 
 ```julia
-viz_response(data, plot_title="SO underdamped step response")
+viz_response(data, title="SO underdamped step response")
 ```
 
 ![](SO_underdamped_step_response.png)
@@ -41,7 +41,7 @@ Y = g * U
 
 data = simulate(Y, 15.0) # simulate until t = 15
 
-viz_response(data, plot_title="FOPTD step response")
+viz_response(data, title="FOPTD step response")
 ```
 
 ![](FOPTD_step_response.png)
@@ -60,7 +60,7 @@ U = (s^2 - a^2) / (s^2 + a^2) ^ 2
 
 data = simulate(U, 8.0, nb_time_points=300) # simulate until t=8, use 300 time points for high resolution
 
-viz_response(data, plot_title=L"inverting an input $U(s)$", plot_ylabel=L"$u(t)$")
+viz_response(data, title="inverting an input U(s)", ylabel="u(t)")
 ```
 
 the `nb_time_points` argument allows us to return a time series with a higher resolution in time. if the plot of the response appears jagged, likely you need to increase `nb_time_points`.

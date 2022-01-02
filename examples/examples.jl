@@ -117,7 +117,7 @@ md"## Bode plot"
 
 # ╔═╡ d3996cd9-6890-4445-b2fe-c38ecc76ce77
 function draw_bode_plot()
-	g = 3 / (s+1)
+	g = 3 / (s + 1)
 
 	fig = bode_plot(g, savename="../docs/src/example_bode.png")
 	return fig
@@ -125,6 +125,107 @@ end
 
 # ╔═╡ 26d9f8ea-5d85-4cdd-b500-0e2d63f60e81
 draw_bode_plot()
+
+# ╔═╡ cb5572cd-4c1d-4291-bfa3-4b83f9c9c784
+md"## servo response of a control system"
+
+# ╔═╡ 08722d92-f2cd-4ec1-bfca-e21ebdb47ad7
+function sim_servo_response()
+	Kc = 1.0
+	τI = 1.0
+	pic = PIController(1.0, 1.0) 
+	gc = TransferFunction(pic) # controller transfer functio
+
+	gp = 3 / (4 * s + 1) # process transfer function
+
+	g_ol = gc * gp # open-loop transfer function
+
+	g_servo = g_ol / (1 + g_ol) # transfer function for servo response
+
+	Y_sp = 1 / s # unit step set point change
+
+	Y = g_servo * Y_sp # resulting output
+
+	E = Y_sp - Y # error signal
+
+	U = gc * E # resulting controller output
+
+	# break output into P-action, I-action
+	U_Paction = Kc * E
+	U_Iaction = Kc * τI / s * E
+	
+	# simulate for y, u, ysp in the time domain
+	final_time = 12.0
+	y_data = simulate(Y, final_time)
+	u_data = simulate(U, final_time)
+	ysp_data = simulate(Y_sp, final_time)
+	u_Paction_data = simulate(U_Paction, final_time)
+	u_Iaction_data = simulate(U_Iaction, final_time)
+	
+	fig = Figure(resolution=(800, 600))
+	axs = [Axis(fig[1, 1], ylabel="system output y(t)"),
+		   Axis(fig[2, 1], xlabel="time, t", ylabel="controller output u(t)")
+	]
+	
+	lines!(axs[1], y_data[:, :t], y_data[:, :output], label="response y(t)")
+	lines!(axs[1], ysp_data[:, :t], ysp_data[:, :output], linestyle=:dash, label="set point yₛₚ(t)")
+	axislegend(axs[1], position=:rb)
+	
+	lines!(axs[2], u_data[:, :t], u_data[:, :output], label="total")
+	lines!(axs[2], u_Paction_data[:, :t], u_Paction_data[:, :output], linestyle=:dash, label="P-action", linewidth=2)
+	lines!(axs[2], u_Iaction_data[:, :t], u_Iaction_data[:, :output], linestyle=:dot, label="I-action", linewidth=2)
+	axislegend(axs[2])
+
+	Controlz.draw_axes.(axs)
+	save("../docs/src/simple_servo_response.png", fig)
+	return fig
+end
+
+# ╔═╡ b87d02fc-2c8c-4536-b244-f7573e11ac4e
+sim_servo_response()
+
+# ╔═╡ 3f41f47d-68ef-4845-96ff-03f62f0a4652
+cool_theme[:palette]
+
+# ╔═╡ 80e11f0b-f06c-4abb-b1b7-45a47032b8b8
+md"## closed loop servo response with time delay"
+
+# ╔═╡ d9b1ad99-adcb-49e2-be52-2f194400dec9
+function sim_servo_response_w_delay()
+	
+	# PI controller transfer function
+	pic = PIController(1.0, 3.0)
+	gc = TransferFunction(pic)
+	
+	# process, sensor dynamics
+	gu = 2 / (4 * s + 1) * exp(-0.5 * s)
+	gm = 1 / (s + 1) * exp(-0.75 * s)
+	gd = 6 / (6 * s + 1)
+	
+	# open-loop transfer function
+	g_ol = gc * gu * gm
+	
+	# closed-loop transfer function for regulator response
+	gr = ClosedLoopTransferFunction(gd, g_ol)
+	
+	# closed-loop transfer function for servo response
+	gs = ClosedLoopTransferFunction(gu * gc, g_ol)
+	
+	# response to unit set point change
+	Y = gs / s
+	data = simulate(Y, 50.0)
+	
+	# # response to unit step in disturbance d
+	# Y = gr / s
+	# data = simulate(Y, 45.0)
+	
+	fig = viz_response(data, title="closed-loop servo response", 
+		               savename="../docs/src/closed_loop_servo_time_delay.png")
+	return fig
+end
+
+# ╔═╡ 6a68842e-ecb7-45d3-86b1-2744752ad3b0
+sim_servo_response_w_delay()
 
 # ╔═╡ 2de0d044-1bf6-489f-9e54-026100fd7655
 md"## draw a `.gif` of a response"
@@ -171,6 +272,13 @@ test_make_gif()
 # ╟─afee73f3-740d-4114-96c5-b50b1e025e6c
 # ╠═d3996cd9-6890-4445-b2fe-c38ecc76ce77
 # ╠═26d9f8ea-5d85-4cdd-b500-0e2d63f60e81
+# ╟─cb5572cd-4c1d-4291-bfa3-4b83f9c9c784
+# ╠═08722d92-f2cd-4ec1-bfca-e21ebdb47ad7
+# ╠═b87d02fc-2c8c-4536-b244-f7573e11ac4e
+# ╠═3f41f47d-68ef-4845-96ff-03f62f0a4652
+# ╟─80e11f0b-f06c-4abb-b1b7-45a47032b8b8
+# ╠═d9b1ad99-adcb-49e2-be52-2f194400dec9
+# ╠═6a68842e-ecb7-45d3-86b1-2744752ad3b0
 # ╟─2de0d044-1bf6-489f-9e54-026100fd7655
 # ╠═b6a45495-e081-4e02-8a0e-cfe1d3df36ba
 # ╠═8acaad0e-951d-4bc9-add8-19315bb9f4e6

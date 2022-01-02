@@ -1,6 +1,9 @@
 using Documenter
 using Controlz
 
+# using Controlz before all docstrings
+DocMeta.setdocmeta!(Controlz, :DocTestSetup, :(using Controlz); recursive=true)
+
 makedocs(
     root = joinpath(dirname(pathof(Controlz)), "..", "docs"),
     modules = [Controlz],

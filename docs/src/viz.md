@@ -1,5 +1,7 @@
 # Visualization
 
+the visualizations rely on [`CairoMakie.jl`](https://github.com/JuliaPlots/Makie.jl).
+
 ## poles and zeros of a transfer function
 
 ```julia
@@ -52,20 +54,32 @@ root_locus(g_ol)
 
 ![](example_root_locus.png)
 
-## hipster plot theme
+## modifying the figures
 
-invoke the hipster plot theme used to make plots for this documentation by:
+all visualization functions return a `Figure` object from `CairoMakie.jl` that can be further modified. for example:
 
 ```julia
-using PyPlot
-PyPlot.matplotlib.style.use("https://raw.githubusercontent.com/SimonEnsemble/Controlz.jl/master/src/hipster.mplstyle")
+g_ol = 4 / (s + 3) / (s + 2) / (s + 1)
+fig = root_locus(g_ol)
+ax = current_axis(fig)
+xlims!(ax, -15, 5)
+ax.xlabel = "real numbers"
 ```
+
+## cool plot theme
+
+the custom plot theme can be invoked in `CairoMakie.jl` for other plots via:
+```julia
+using Controlz, CairoMakie
+set_theme!(cool_theme)
+```
+more, `CairoMakie.jl` offers other themes [here](https://makie.juliaplots.org/dev/documentation/theming/predefined_themes/).
 
 ## detailed docs
 
 ```@docs
-    viz_poles_and_zeros
     viz_response
+    viz_poles_and_zeros
     nyquist_diagram
     bode_plot
     root_locus

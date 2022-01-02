@@ -26,4 +26,4 @@ viz_response(data, plot_title="SO underdamped step response")
 
 `Controlz.jl` is an officially registered Julia package. install in the Julia REPL by typing `]` to go into package mode, then `add Controlz`.
 
-I highly recommend using interactive [Pluto notebooks](https://github.com/fonsp/Pluto.jl) for coding in Julia, whose automatic package manager installs `Controlz.jl` upon running `using Controlz`.
+I recommend interactive [Pluto notebooks](https://github.com/fonsp/Pluto.jl) for coding in Julia, whose automatic package manager installs `Controlz.jl` upon running `using Controlz`.

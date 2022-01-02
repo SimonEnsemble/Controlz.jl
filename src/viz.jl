@@ -34,8 +34,9 @@ xlims!(ax, 0, 15)
 # Example
 ```
 g = 4 / (4 * s ^ 2 + 0.8 * s + 1)
-u = 1 / s
-data = simulate(g * u, (0.0, 50.0))
+U = 1 / s
+Y = g * U
+data = simulate(Y, 50.0)
 fig = viz_response(data)
 ```
 """
@@ -186,8 +187,9 @@ returns the two axes of the plot for further tuning via `matplotlib` commands.
 
 adjust the range of frequencies that the Bode plot presents with `log10_ω_min` and `log10_ω_max`.
 
-returns a `CairoMakie.jl` `Figure` object for further modification.
 increase the resolution of the Bode plot with `nb_pts`.
+
+returns a `CairoMakie.jl` `Figure` object for further modification.
 """
 function bode_plot(g::TransferFunction; log10_ω_min::Float64=-3.0, log10_ω_max::Float64=3.0, 
                    nb_pts::Int=300, savename::Union{Nothing, String}=nothing)
