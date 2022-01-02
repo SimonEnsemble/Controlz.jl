@@ -25,18 +25,21 @@ tf = TransferFunction([4], [2, 1], 2.2)
 * `time_delay::Float64`: the associated time delay
 """
 struct TransferFunction
-    numerator::Polynomial
-    denominator::Polynomial
-    time_delay::Union{Float64, Int}
+    numerator::Polynomial{Float64, :s}
+    denominator::Polynomial{Float64, :s}
+    time_delay::Float64
 end
 
-ArrayOfReals = Union{Array{Float64, 1}, Array{Int64, 1}}
+TransferFunction(num::Union{Vector{Int}, Vector{Float64}}, 
+                 den::Union{Vector{Int}, Vector{Float64}}, 
+                 td::Union{Int, Float64}) = 
+    TransferFunction(Polynomial(reverse(convert(Vector{Float64}, num)), :s), 
+                     Polynomial(reverse(convert(Vector{Float64}, den)), :s), 
+                     convert(Float64, td))
 
-TransferFunction(num::ArrayOfReals, den::ArrayOfReals) = 
-    TransferFunction(Polynomial(reverse(num), :s), Polynomial(reverse(den), :s), 0.0)
-
-TransferFunction(num::ArrayOfReals, den::ArrayOfReals, td::Union{Float64, Int}) = 
-    TransferFunction(Polynomial(reverse(num), :s), Polynomial(reverse(den), :s), td)
+TransferFunction(num::Union{Vector{Int}, Vector{Float64}}, 
+                 den::Union{Vector{Int}, Vector{Float64}}) =
+    TransferFunction(num, den, 0.0)
 
 const s = TransferFunction([1, 0], [1])
 
