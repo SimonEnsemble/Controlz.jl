@@ -461,3 +461,8 @@ end
     data_new = simulate(ClosedLoopTransferFunction(gp * gc, gp * gc), 10.0)
     @test isapprox(data_old[:, :output], data_new[:, :output], atol=0.0001)
 end
+
+@test "example notebook (also to generate images for docs)" begin
+    include(joinpath("..", "examples", "examples.jl"))
+    @test true
+end
