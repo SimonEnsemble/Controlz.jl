@@ -270,7 +270,7 @@ function mk_gif(data::DataFrame;
     step_to_image(i::Int) = @sprintf("__y_of_t_snapshot_%03d.png", i)
 
     # save series of images
-    for i = 1:length(t)
+    for i = 1:nrow(data)
         fig = viz_response(data[1:i, :], title=title, xlabel=xlabel, ylabel=ylabel)
         ax = current_axis()
         xlims!(ax, xlims...)
