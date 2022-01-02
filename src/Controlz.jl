@@ -6,10 +6,9 @@ using Interpolations
 using Printf
 using Roots
 using DataFrames
-using CairoMakie
+using CairoMakie, ColorSchemes, Colors
 
-# TODO set plot theme
-include("beavs_theme.jl")
+include("plot_theme.jl")
 
 include("tf.jl")
 include("special_tfs.jl")
@@ -38,5 +37,7 @@ export
     # margins.jl
     gain_phase_margins,
     # closedloops.jl
-    ClosedLoopTransferFunction
+    ClosedLoopTransferFunction,
+    # plot_theme.jl
+    cool_theme
 end

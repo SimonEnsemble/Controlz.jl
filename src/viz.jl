@@ -1,84 +1,89 @@
-function draw_axes()
-    axvline(x=0, color="0.8", lw=2, zorder=1)
-    axhline(y=0, color="0.8", lw=2, zorder=1)
+function draw_axes(ax::Axis)
+	vlines!(ax, 0.0, color=(:gray40, 0.6), linewidth=1)
+	hlines!(ax, 0.0, color=(:gray40, 0.6), linewidth=1)
 end
 
 @doc raw"""
     viz_response(data, 
-                 plot_title="", plot_xlabel="time, t", 
-                 plot_ylabel="output, y(t)",
+                 title="", xlabel="time, t", 
+                 ylabel="output, y(t)",
                  savename=nothing)
 
 plot `data[:, :output]` vs. `data[:, :t]` to visualize the response of a system to an input. 
 typically the data frame, `data`, is returned from [`simulate`](@ref).
 
-note that PyPlot.jl (matplotlib) commands can be invoked after `viz_response` to make further changes to the figure panel.
-e.g. `xlim([0, 1])` can be applied after `viz_response`.
-
 # Arguments
 * `data::DataFrame`: data frame of time series data, containing a `:t` column for times and `:output` column for the outputs.
-* `plot_title::String`: title of plot
-* `plot_xlabel::String`: x-label
-* `plot_ylabel::String`: y-label
-* `savename::Union{Nothing, String}`: filename to save as a figure in .png format (dpi 250).
+* `title::String`: title of plot
+* `xlabel::String`: x-label
+* `ylabel::String`: y-label
+* `savename::Union{Nothing, String}`: filename to save as a figure in .png format.
+
+# Returns
+`CairoMakie.jl` `Figure` object. this will display in a Pluto.jl notebook.
+
+`CairoMakie.jl` commands can be invoked after `viz_response` to make further changes to the figure panel by e.g.:
+```julia
+fig = viz_response(data)
+ax = current_axis(fig)
+ax.xlabel = "new xlabel"
+xlims!(ax, 0, 15)
+```
+
 
 # Example
 ```
 g = 4 / (4 * s ^ 2 + 0.8 * s + 1)
 u = 1 / s
 data = simulate(g * u, (0.0, 50.0))
-viz_response(data)
+fig = viz_response(data)
 ```
 """
 function viz_response(data::DataFrame;
-        plot_title::String="", 
-        plot_xlabel::String=L"time, $t$",
-        plot_ylabel::String=L"output, $y(t)$",
-        savename::Union{Nothing, String}=nothing
+                      title::String="",
+                      xlabel::String="time, t",
+                      ylabel::String="output, y(t)",
+                      savename::Union{Nothing, String}=nothing
     )
-    
+
     fig = Figure()
-    plot(data[:, :t], data[:, :output], zorder=100)
-    xlabel(plot_xlabel)
-    ylabel(plot_ylabel)
-    title(plot_title)
-    draw_axes()
+    ax  = Axis(fig[1, 1], xlabel=xlabel, ylabel=ylabel, title=title)
+    draw_axes(ax)
+    lines!(data[:, :t], data[:, :output])
     if ! isnothing(savename)
-        tight_layout()
-        if ! occursin(".png", savename)
-            savename *= ".png"
-        end
-        savefig(savename, dpi=250, format="png")
+        save(savename, fig, px_per_unit=1)
     end
-    return nothing
+    return fig
 end
 
 """
-    viz_poles_and_zeros(tf)
+    viz_poles_and_zeros(g, savename=nothing)
 
-plot the zeros and poles of the transfer function `tf` in the complex plane.
+plot the zeros and poles of the transfer function `g` in the complex plane.
+
+returns a `CairoMakie.jl` `Figure` object for further modification.
 """
-function viz_poles_and_zeros(tf::TransferFunction)
+function viz_poles_and_zeros(tf::TransferFunction; savename::Union{Nothing, String}=nothing)
     z, p, k = zeros_poles_gain(tf)
     
     fig = Figure()
-    scatter(real.(z), imag.(z), marker="o", label="zeros", color="C1", zorder=100, s=50)
-    scatter(real.(p), imag.(p), marker="x", label="poles", color="C2", s=50, zorder=100)
-    legend()
-    draw_axes()
-    xlabel("Re")
-    ylabel("Im")
-    title("poles and zeros")
-    tight_layout()
-    return nothing
+	ax  = Axis(fig[1, 1], xlabel="Re", ylabel="Im", title="poles and zeros")
+    draw_axes(ax)
+	scatter!(real.(z), imag.(z), marker=:o, label="zeros", markersize=15)
+	scatter!(real.(p), imag.(p), marker=:x, label="poles", markersize=15)
+	axislegend()
+    if ! isnothing(savename)
+        save(savename, fig, px_per_unit=1)
+    end
+	return fig
 end
 
 """
-    nyquist_diagram(tf, nb_pts=500, ω_max=10.0)
+    nyquist_diagram(tf, nb_pts=500, ω_max=10.0, savename=nothing)
 
 plot the Nyquist diagram for a transfer function `tf` to visualize its frequency response. `s=-1` is plotted as a red `+`. `nb_pts` changes the resolution. `ω_max` gives maximum frequency considered.
 """
-function nyquist_diagram(tf::TransferFunction; nb_pts::Int=500, ω_max::Float64=10.0)
+function nyquist_diagram(tf::TransferFunction; nb_pts::Int=500, ω_max::Float64=10.0, savename::Union{Nothing, String}=nothing)
     ω_neg = range(-ω_max, 0.0, length=nb_pts)
     ω_pos = range(0.0, ω_max, length=nb_pts)
 
@@ -86,19 +91,20 @@ function nyquist_diagram(tf::TransferFunction; nb_pts::Int=500, ω_max::Float64=
     g_iω_pos = [evaluate(tf, ω_i * im) for ω_i in ω_pos]
 
     fig = Figure()
-    plot(real(g_iω_neg), imag(g_iω_neg), zorder=100)
-    plot(real(g_iω_pos), imag(g_iω_pos), zorder=100)
-    draw_axes()
+	ax  = Axis(fig[1, 1], xlabel="Re[G(iω)]", ylabel="Im[G(iω)]", title="Nyquist diagram")
+    draw_axes(ax)
+    lines!(real(g_iω_neg), imag(g_iω_neg))
+    lines!(real(g_iω_pos), imag(g_iω_pos))
     # plot -1
-    plot([-1], [0], marker="+", color="r", zorder=1000, markersize=15)
-    xlabel("Re[G(iω)]")
-    ylabel("Im[G(iω)]")
-    title("Nyquist diagram")
-    tight_layout()
+    scatter([-1], [0], marker=:+, markersize=15, color="red")
+    if ! isnothing(savename)
+        save(savename, fig, px_per_unit=1)
+    end
+    return fig
 end
 
 """
-    root_locus(g_ol, max_mag_Kc=10.0, nb_pts=500)
+    root_locus(g_ol, max_mag_Kc=10.0, nb_pts=500, savename=nothing)
 
 visualize the root locus plot of an open-loop transfer function `g_ol`.
 
@@ -109,7 +115,7 @@ visualize the root locus plot of an open-loop transfer function `g_ol`.
 * `nb_pts::Int=500`: the number of gains to explore. increase for higher resolution.
 """
 function root_locus(g_ol::TransferFunction;
-        max_mag_Kc::Float64=10.0, nb_pts::Int=500)
+        max_mag_Kc::Float64=10.0, nb_pts::Int=500, savename=nothing)
     # compute zeros, poles, and gain of open loop transfer function
     z, p, k = zeros_poles_k(g_ol)
 
@@ -148,25 +154,23 @@ function root_locus(g_ol::TransferFunction;
     end
 
     fig = Figure()
+	ax  = Axis(fig[1, 1], xlabel="Re", ylabel="Im", title="root locus")
+    draw_axes(ax)
     # plot poles; corresponds to Kc = 0
-    scatter(real.(p), imag.(p), marker="x", label="poles",
-            color="k", s=50, zorder=100)
+    scatter!(real.(p), imag.(p), marker=:x, label="poles", markersize=15, color="black")
     # plot zeros; corresponds to |Kc| → ∞
     if length(z) > 0
-        scatter(real.(z), imag.(z), marker="o", label="zeros",
-                color="k", s=50, zorder=100, facecolor="None")
+        scatter!(real.(z), imag.(z), marker=:o, label="zeros", markersize=15, color="black")
     end
     # plot roots traversing plane
     for i = 1:length(p)
-        plot(real.(rloc[:, i]), imag.(rloc[:, i]),
-            zorder=100, color="C$(i-1)")
+        lines!(real.(rloc[:, i]), imag.(rloc[:, i]))
     end
-    xlabel("Re")
-    ylabel("Im")
-    draw_axes()
-    title("root locus")
-    legend()
-    tight_layout()
+    axislegend()
+    if ! isnothing(savename)
+        save(savename, fig, px_per_unit=1)
+    end
+    return fig
 end
 
 """
@@ -192,11 +196,12 @@ function bode_plot(g::TransferFunction; log10_ω_min::Float64=-3.0, log10_ω_max
             circle_counter += 1
         end
     end
-
-    fig, axs = subplots(2, 1, sharex=true, figsize=(8, 7))
-    axs[1].plot(ω, abs.(g_iω), color="C0")
-    axs[1].set_ylabel(L"$|g(i\omega)|$")
-    axs[1].set_title("Bode plot")
+    
+    fig = Figure()
+    axs = [Axis(fig[1, 1], ylabel="|g(iω)|", title="Bode plot"),
+           Axis(fig[2, 1], xlabel="ω")]
+    linkxaxes!(axs...)
+    axs[1].lines!(ω, abs.(g_iω))
     axs[1].set_xscale("log")
     axs[1].set_yscale("log")
     axs[2].set_xscale("log")
@@ -207,7 +212,6 @@ function bode_plot(g::TransferFunction; log10_ω_min::Float64=-3.0, log10_ω_max
         ax.minorticks_on()
         ax.grid(b=true, which="minor", alpha=0.25)
     end
-    xlabel(L"frequency, $\omega$")
     tight_layout()
     return axs
 end
