@@ -462,7 +462,7 @@ end
     @test isapprox(data_old[:, :output], data_new[:, :output], atol=0.0001)
 end
 
-@test "example notebook (also to generate images for docs)" begin
+@testset "example notebook (also to generate images for docs)" begin
     include(joinpath("..", "examples", "examples.jl"))
     @test true
 end
