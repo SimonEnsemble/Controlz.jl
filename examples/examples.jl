@@ -8,7 +8,7 @@ using InteractiveUtils
 import Pkg; Pkg.activate()
 
 # ╔═╡ 5da3e954-e940-45a7-b355-45e78b5ce38b
-using Controlz, DataFrames, CairoMakie, ColorSchemes, Colors
+using Controlz, DataFrames, CairoMakie, ColorSchemes, Colors, Printf
 
 # ╔═╡ ecab99c5-d929-4a0a-9f81-89ae382aaf45
 set_theme!(cool_theme)
@@ -107,7 +107,10 @@ function draw_root_locus_diagram()
 end
 
 # ╔═╡ 24a1c30c-a21c-471d-bcf7-d90fe7200a8c
-draw_root_locus_diagram()
+fig = draw_root_locus_diagram()
+
+# ╔═╡ c7739f1b-f3d9-4473-91fe-947f29b499f0
+current_axis().limits
 
 # ╔═╡ afee73f3-740d-4114-96c5-b50b1e025e6c
 md"## Bode plot"
@@ -123,42 +126,27 @@ end
 # ╔═╡ 26d9f8ea-5d85-4cdd-b500-0e2d63f60e81
 draw_bode_plot()
 
-# ╔═╡ 13ce095f-2ba2-42a5-b753-cd6a43f024af
-function mybode_plot(g::TransferFunction; log10_ω_min::Float64=-3.0, log10_ω_max::Float64=3.0, nb_pts::Int=300)
-    ω = 10.0 .^ range(log10_ω_min, log10_ω_max, length=nb_pts)
-    g_iω = [evaluate(g, im * ω_i) for ω_i in ω]
-    ∠g_iω = zeros(length(g_iω))
+# ╔═╡ 2de0d044-1bf6-489f-9e54-026100fd7655
+md"## draw a `.gif` of a response"
 
-    circle_counter = 0
-    ∠g_iω[1] = angle(g_iω[1])
-    for i = 2:length(g_iω)
-        ∠g_iω[i] = angle(g_iω[i]) - circle_counter * 2 * π
-        if ∠g_iω[i] - ∠g_iω[i-1] > π
-            ∠g_iω[i] -= 2 * π
-            circle_counter += 1
-        end
-    end
+# ╔═╡ b6a45495-e081-4e02-8a0e-cfe1d3df36ba
+function test_make_gif()
+	K = 2.0 # gain
+	τ = 4.0 # time constant
+	θ = 1.5 # time delay
+	
+	g = K * exp(-θ * s) / (τ * s + 1) # FOPTD transfer function
 
-    fig = Figure(resolution=(800, 600))
-    axs = [Axis(fig[1, 1], xscale=log10, yscale=log10,
-		        ylabel="|g(iω)|", title="Bode plot",
-				xminorticksvisible=true, xminorgridvisible=true,
-				yminorticksvisible=true, yminorgridvisible=true),
-           Axis(fig[2, 1], xscale=log10,
-			    xlabel="ω", ylabel="∠g(iω)",
-		        xminorticksvisible=true, xminorgridvisible=true,
-				yminorticksvisible=true, yminorgridvisible=true)
-			]
-    # linkxaxes!(axs...)
-    lines!(axs[1], ω, abs.(g_iω))
-    lines!(axs[2], ω, ∠g_iω / π)
-	# axs[2].yaxis.set_major_formatter(PyPlot.matplotlib.ticker.FormatStrFormatter(L"%g$\pi$"))
-    return fig
+	U = 1 / s # step input
+	Y = g * U # response
+
+	t_final = 15.0
+	data = simulate(Y, t_final)
+	mk_gif(data)
 end
 
-
-# ╔═╡ 7310762a-3c02-42e0-bbb7-85011ba4e144
-mybode_plot(3/(s+1))
+# ╔═╡ 8acaad0e-951d-4bc9-add8-19315bb9f4e6
+test_make_gif()
 
 # ╔═╡ Cell order:
 # ╠═4952d2aa-6b42-11ec-15ea-ed5764c1810b
@@ -179,8 +167,10 @@ mybode_plot(3/(s+1))
 # ╟─8a3d4776-5968-450d-982f-00249caa82ae
 # ╠═bbd279b4-184d-4e6f-bacf-b468d5c1fd36
 # ╠═24a1c30c-a21c-471d-bcf7-d90fe7200a8c
+# ╠═c7739f1b-f3d9-4473-91fe-947f29b499f0
 # ╟─afee73f3-740d-4114-96c5-b50b1e025e6c
 # ╠═d3996cd9-6890-4445-b2fe-c38ecc76ce77
 # ╠═26d9f8ea-5d85-4cdd-b500-0e2d63f60e81
-# ╠═13ce095f-2ba2-42a5-b753-cd6a43f024af
-# ╠═7310762a-3c02-42e0-bbb7-85011ba4e144
+# ╟─2de0d044-1bf6-489f-9e54-026100fd7655
+# ╠═b6a45495-e081-4e02-8a0e-cfe1d3df36ba
+# ╠═8acaad0e-951d-4bc9-add8-19315bb9f4e6

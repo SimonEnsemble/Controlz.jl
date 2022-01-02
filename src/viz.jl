@@ -82,6 +82,8 @@ end
     nyquist_diagram(tf, nb_pts=500, ω_max=10.0, savename=nothing)
 
 plot the Nyquist diagram for a transfer function `tf` to visualize its frequency response. `s=-1` is plotted as a red `+`. `nb_pts` changes the resolution. `ω_max` gives maximum frequency considered.
+
+returns a `CairoMakie.jl` `Figure` object for further modification.
 """
 function nyquist_diagram(tf::TransferFunction; nb_pts::Int=500, ω_max::Float64=10.0, savename::Union{Nothing, String}=nothing)
     ω_neg = range(-ω_max, 0.0, length=nb_pts)
@@ -113,9 +115,12 @@ visualize the root locus plot of an open-loop transfer function `g_ol`.
 * `max_mag_Kc::Float64=10.0`: the maximum magnitude by which the gain of `g_ol` is 
     scaled in order to see the roots traversing the plane
 * `nb_pts::Int=500`: the number of gains to explore. increase for higher resolution.
+
+# returns
+a `CairoMakie.jl` `Figure` object for further modification.
 """
 function root_locus(g_ol::TransferFunction;
-        max_mag_Kc::Float64=10.0, nb_pts::Int=500, savename=nothing)
+        max_mag_Kc::Float64=10.0, nb_pts::Int=500, savename::Union{Nothing, String}=nothing)
     # compute zeros, poles, and gain of open loop transfer function
     z, p, k = zeros_poles_k(g_ol)
 
@@ -180,9 +185,12 @@ draw the Bode plot of a transfer function `tf` to visualize its frequency respon
 returns the two axes of the plot for further tuning via `matplotlib` commands.
 
 adjust the range of frequencies that the Bode plot presents with `log10_ω_min` and `log10_ω_max`.
+
+returns a `CairoMakie.jl` `Figure` object for further modification.
 increase the resolution of the Bode plot with `nb_pts`.
 """
-function bode_plot(g::TransferFunction; log10_ω_min::Float64=-3.0, log10_ω_max::Float64=3.0, nb_pts::Int=300)
+function bode_plot(g::TransferFunction; log10_ω_min::Float64=-3.0, log10_ω_max::Float64=3.0, 
+                   nb_pts::Int=300, savename::Union{Nothing, String}=nothing)
     ω = 10.0 .^ range(log10_ω_min, log10_ω_max, length=nb_pts)
     g_iω = [evaluate(g, im * ω_i) for ω_i in ω]
     ∠g_iω = zeros(length(g_iω))
@@ -197,28 +205,36 @@ function bode_plot(g::TransferFunction; log10_ω_min::Float64=-3.0, log10_ω_max
         end
     end
     
-    fig = Figure()
-    axs = [Axis(fig[1, 1], ylabel="|g(iω)|", title="Bode plot"),
-           Axis(fig[2, 1], xlabel="ω")]
+    fig = Figure(resolution=(800, 600))
+    axs = [Axis(fig[1, 1], xscale=log10, yscale=log10,
+		        ylabel="|g(iω)|", title="Bode plot"),
+           Axis(fig[2, 1], xscale=log10,
+			    xlabel="ω", ylabel="∠g(iω)")
+			]
     linkxaxes!(axs...)
-    axs[1].lines!(ω, abs.(g_iω))
-    axs[1].set_xscale("log")
-    axs[1].set_yscale("log")
-    axs[2].set_xscale("log")
-    axs[2].plot(ω, ∠g_iω / π, color="C1")
-    axs[2].yaxis.set_major_formatter(PyPlot.matplotlib.ticker.FormatStrFormatter(L"%g$\pi$"))
-    axs[2].set_ylabel(L"$\angle g(i\omega)$")
-    for ax in axs
-        ax.minorticks_on()
-        ax.grid(b=true, which="minor", alpha=0.25)
+	for ax in axs # to make plot easy to read
+		ax.xticksvisible = true
+		ax.xminorticksvisible = true
+		ax.xminorticks = IntervalsBetween(9)
+		ax.xminorgridvisible = true
+
+		ax.yticksvisible = true
+		ax.yminorticksvisible = true
+		ax.yminorticks = IntervalsBetween(9)
+		ax.yminorgridvisible = true
+	end
+	axs[2].yticks = MultiplesTicks(4, pi, "π")
+    lines!(axs[1], ω, abs.(g_iω))
+    lines!(axs[2], ω, ∠g_iω / π)
+    if ! isnothing(savename)
+        save(savename, fig, px_per_unit=1)
     end
-    tight_layout()
-    return axs
+    return fig
 end
 
 @doc raw"""
-    mk_gif(data, plot_title="", plot_xlabel="time, t", 
-                 plot_ylabel="output, y(t)",
+    mk_gif(data, title="", xlabel="time, t", 
+                 ylabel="output, y(t)",
                  savename="response")
 
 make a .gif of the process response.
@@ -229,38 +245,37 @@ the .gif is saved as a file `savename`.
 
 # Arguments
 * `data::DataFrame`: data frame of time series data, containing a `:t` column for times and `:output` column for the outputs.
-* `plot_title::String`: title of plot
-* `plot_xlabel::String`: x-label
-* `plot_ylabel::String`: y-label
+* `title::String`: title of plot
+* `xlabel::String`: x-label
+* `ylabel::String`: y-label
 * `savename::String`: filename to save as a .gif. .gif extension automatically appended if not provided.
 """
-function mk_gif(t::Array{Float64}, y::Array{Float64};
-        plot_title::String="",
-        plot_xlabel::String=L"time, $t$",
-        plot_ylabel::String=L"output, $y(t)$",
-        savename::String="response.gif"
+function mk_gif(data::DataFrame;
+                title::String="",
+                xlabel::String="time, t",
+                ylabel::String="output, y(t)",
+                savename::String="response.gif"
     )
-    if length(t) > 999
+    if nrow(data) > 999
         error("too many points and thus images; reduce the number of points")
     end
 
-    # let matplotlib determine x, y lims:
-    plot(t, y)
-    xmin, xmax, ymin, ymax = axis()
-    close()
+    # determine x-, y-limits
+    Δx = maximum(data[:, :t]) - minimum(data[:, :t])
+    Δy = maximum(data[:, :output]) - minimum(data[:, :output])
+    xlims = (minimum(data[:, :t])      - 0.01 * Δx, maximum(data[:, :t])      + 0.01 * Δx))
+    ylims = (minimum(data[:, :output]) - 0.01 * Δy, maximum(data[:, :output]) + 0.01 * Δy)
     
     # name to save image i as.
     step_to_image(i::Int) = @sprintf("__y_of_t_snapshot_%03d.png", i)
 
     # save series of images
-    for i = 2:length(t)
-        viz_response(t[1:i], y[1:i], plot_title=plot_title, plot_xlabel=plot_xlabel,
-            plot_ylabel=plot_ylabel)
-        xlim([xmin, xmax])
-        ylim([ymin, ymax])
-        tight_layout()
-        savefig(step_to_image(i), format="png", dpi=100)
-        close()
+    for i = 1:length(t)
+        fig = viz_response(data[1:i, :], title=title, xlabel=xlabel, ylabel=ylabel)
+        ax = current_axis()
+        xlims!(ax, xlims...)
+        ylims!(ax, ylims...)
+        save(step_to_image(i), fig)
     end
     
     if ! occursin(".gif", savename)
@@ -274,7 +289,7 @@ function mk_gif(t::Array{Float64}, y::Array{Float64};
     end
 
     # clean up
-    for i = 2:length(t)
+    for i = 1:nrow(data)
         rm(step_to_image(i))
     end
 end
