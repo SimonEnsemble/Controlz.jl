@@ -51,6 +51,17 @@ function Base.show(io::IO, tf::TransferFunction)
     return nothing
 end
 
+function Base.show(io::IO, g::ClosedLoopTransferFunction)
+    println(io, "closed-loop transfer function.
+      top
+    -------
+    1 + g_ol")
+    println(io, "\n  top = ")
+    show(io, g.top)
+    println(io, "\n\n  g_ol = ")
+    show(io, g.g_ol)
+end
+
 function Base.show(io::IO, pc::PController)
     println(io, "P controller")
     println(io, "\tcontroller gain Kc = ", pc.Kc)
