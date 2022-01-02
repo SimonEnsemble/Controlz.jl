@@ -263,7 +263,7 @@ function mk_gif(data::DataFrame;
     # determine x-, y-limits
     Δx = maximum(data[:, :t]) - minimum(data[:, :t])
     Δy = maximum(data[:, :output]) - minimum(data[:, :output])
-    xlims = (minimum(data[:, :t])      - 0.01 * Δx, maximum(data[:, :t])      + 0.01 * Δx))
+    xlims = (minimum(data[:, :t])      - 0.01 * Δx, maximum(data[:, :t])      + 0.01 * Δx)
     ylims = (minimum(data[:, :output]) - 0.01 * Δy, maximum(data[:, :output]) + 0.01 * Δy)
     
     # name to save image i as.
