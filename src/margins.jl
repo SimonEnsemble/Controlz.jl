@@ -30,7 +30,7 @@ margins.phase_margin # phase margin (radians)
 ```
 """
 function gain_phase_margins(g_ol::TransferFunction; ω_c_guess::Float64=0.001, ω_g_guess::Float64=0.001)
-    # ∠ G(i ω_c) = -π
+    # critical frequency ∠ G(i ω_c) = -π
     ω_c = NaN
     try
         ω_c = fzero(ω -> angle(evaluate(g_ol, im * ω)) + π, ω_c_guess, atol=2*sqrt(eps()))
@@ -42,7 +42,12 @@ function gain_phase_margins(g_ol::TransferFunction; ω_c_guess::Float64=0.001, �
             error("something went wrong when computing ω_c")
         end
     end
-    # | G(i ω_g) | = 1
+    # check for spurious solution (often ω_c d.n.e.) TODO check issue on Roots.jl
+    if ! isapprox(angle(evaluate(g_ol, im * ω_c)), -π, rtol=0.01)
+        ω_c = NaN
+    end
+
+    # gain cross over frequency | G(i ω_g) | = 1
     ω_g = NaN
     try
         ω_g = fzero(ω -> abs(evaluate(g_ol, im * ω)) - 1.0, ω_g_guess, atol=2*sqrt(eps()))
@@ -53,6 +58,10 @@ function gain_phase_margins(g_ol::TransferFunction; ω_c_guess::Float64=0.001, �
             println(da_error)
             error("something went wrong when computing ω_g")
         end
+    end
+    # check for spurious solution (often ω_c d.n.e.) TODO check issue on Roots.jl
+    if ! isapprox(abs(evaluate(g_ol, im * ω_g)), 1.0, rtol=0.01)
+        ω_g = NaN
     end
     # gain margin = 1 / | G(i ω_c) |
     gm = 1 / abs(evaluate(g_ol, im * ω_c))

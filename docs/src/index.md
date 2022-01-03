@@ -1,6 +1,6 @@
 # Controlz.jl
 
-`Controlz.jl` is a [Julia](https://julialang.org/) package to analyze and simulate process dynamics and control systems using transfer function representations.
+`Controlz.jl` is a pure-[Julia](https://julialang.org/) package to analyze and simulate process dynamics and control systems using transfer function representations.
 
 for example, to simulate the unit step response of a second-order, underdamped system characterized by the transfer function
 
@@ -24,7 +24,6 @@ viz_response(data, plot_title="SO underdamped step response")
 
 # install the `Controlz.jl` package in Julia
 
-* in the Julia REPL: go into package mode by typing `]`. then `add Controlz`. then `Backspace` to exit package mode.
-* in a Jupyter or Pluto Notebook: `using Pkg; Pkg.add("Controlz")`. (this way also works in the REPL)
+`Controlz.jl` is an officially registered Julia package. install in the Julia REPL by typing `]` to go into package mode, then `add Controlz`.
 
-for visualizations, `Controlz.jl` relies on `PyPlot.jl`, a Julia interface to matplotlib in Python. see [here](https://github.com/JuliaPy/PyPlot.jl) if you have trouble installing `PyPlot.jl`.
+I recommend interactive [Pluto notebooks](https://github.com/fonsp/Pluto.jl) for coding in Julia, whose automatic package manager installs `Controlz.jl` upon running `using Controlz`.

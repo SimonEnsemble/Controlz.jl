@@ -1,3 +1,8 @@
+```@meta
+DocTestSetup = quote
+    using Controlz
+end
+```
 # transfer functions
 
 the response [output $Y(s)$] of a linear, time-invariant system to any input [$U(s)$] is characterized by a transfer function $g(s)=Y(s)/U(s)$.
@@ -9,13 +14,21 @@ $$g(s)=\dfrac{5s+1}{s^2 + 4s+5}$$.
 
 we can construct $g(s)$ in an intuitive way that resembles the algebraic expression:
 
-```julia
+```jldoctest; output=false
 g = (5 * s + 1) / (s ^ 2 + 4 * s + 5) # way 1
+# output
+     5.0*s + 1.0
+---------------------
+1.0*s^2 + 4.0*s + 5.0
 ```
 
 alternatively, we can construct a `TransferFunction` using the coefficients associated with the powers of $s$ in the polynomials composing the numerator and denominator, respectively, of $g(s)$. The coefficients of the highest powers of $s$ go first.
-```julia
+```jldoctest; output=false
 g = TransferFunction([5, 1], [1, 4, 5]) # way 2
+# output
+     5.0*s + 1.0
+---------------------
+1.0*s^2 + 4.0*s + 5.0
 ```
 
 note that, under the hood, we defined `s` such that `s == TransferFunction([1, 0], [1])`.

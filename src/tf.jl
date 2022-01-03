@@ -4,7 +4,7 @@ import Base.*, Base./, Base.+, Base.-, Base.==, Base.^, Base.exp, Base.isapprox
     tf = TransferFunction([1, 2], [3, 5, 8])
     tf = TransferFunction([1, 2], [3, 5, 8], 3.0)
 
-Construct a transfer function representing a linear, time-invariant system.
+construct a transfer function representing a linear, time-invariant system.
 
 # Example
 to construct the transfer function
@@ -15,28 +15,35 @@ G(s) = \frac{4e^{-2.2s}}{2s+1}
 
 in Julia:
 
-```julia
+```jldoctest
 tf = TransferFunction([4], [2, 1], 2.2)
+# output
+    4.0
+----------- e^(-2.2*s)
+2.0*s + 1.0
 ```
 
 # Attributes
-* `numerator::Poly`: the polynomial in the numerator of the transfer function
-* `denominator::Poly`: the polynomial in the denominator of the transfer function
+* `numerator::Polynomial{Float64, :s}`: the polynomial in the numerator of the transfer function
+* `denominator::Polynomial{Float64, :s}`: the polynomial in the denominator of the transfer function
 * `time_delay::Float64`: the associated time delay
 """
 struct TransferFunction
-    numerator::Poly
-    denominator::Poly
-    time_delay::Union{Float64, Int}
+    numerator::Polynomial{Float64, :s}
+    denominator::Polynomial{Float64, :s}
+    time_delay::Float64
 end
 
-ArrayOfReals = Union{Array{Float64, 1}, Array{Int64, 1}}
+TransferFunction(num::Union{Vector{Int}, Vector{Float64}}, 
+                 den::Union{Vector{Int}, Vector{Float64}}, 
+                 td::Union{Int, Float64}) = 
+    TransferFunction(Polynomial(reverse(convert(Vector{Float64}, num)), :s), 
+                     Polynomial(reverse(convert(Vector{Float64}, den)), :s), 
+                     convert(Float64, td))
 
-TransferFunction(num::ArrayOfReals, den::ArrayOfReals) = 
-    TransferFunction(Poly(reverse(num), :s), Poly(reverse(den), :s), 0.0)
-
-TransferFunction(num::ArrayOfReals, den::ArrayOfReals, td::Union{Float64, Int}) = 
-    TransferFunction(Poly(reverse(num), :s), Poly(reverse(den), :s), td)
+TransferFunction(num::Union{Vector{Int}, Vector{Float64}}, 
+                 den::Union{Vector{Int}, Vector{Float64}}) =
+    TransferFunction(num, den, 0.0)
 
 const s = TransferFunction([1, 0], [1])
 
@@ -201,19 +208,17 @@ zeros_poles_k(tf::TransferFunction) = _zeros(tf), _poles(tf), _k(tf)
 function zeros_poles_k(zeros::Array, poles::Array, k::Union{Float64, Int};
                        time_delay::Union{Int64, Float64}=0)
     # construct numerator polynomial 
-    top = length(zeros) == 0 ? Poly(1.0, :s) : poly(zeros, :s)
+    top = length(zeros) == 0 ? Polynomial(1.0, :s) : fromroots(zeros, var=:s)
     
     # construct denominator polynomial
-    bottom = length(poles) == 0 ? Poly(1.0, :s) : poly(poles, :s)
-    
-    # ^ poly is from Polynomails.jl and means "construct polynomial with these roots"
+    bottom = length(poles) == 0 ? Polynomial(1.0, :s) : fromroots(poles, var=:s)
 
     # owing to numerical errors, the coeff's could be imaginary with tiny imaginary parts
     #  let's check that the imaginary parts are tiny, then convert the coefficients to real.
-    @assert maximum(abs.(imag.(top.a))) < 1e-6
-    @assert maximum(abs.(imag.(bottom.a))) < 1e-6
-    top = Poly(real.(top.a), :s) # reconstruct a polynomial with real coeffs
-    bottom = Poly(real.(bottom.a), :s)
+    @assert maximum(abs.(imag.(top.coeffs))) < 1e-6
+    @assert maximum(abs.(imag.(bottom.coeffs))) < 1e-6
+    top = Polynomial(real.(top.coeffs), :s) # reconstruct a polynomial with real coeffs
+    bottom = Polynomial(real.(bottom.coeffs), :s)
     
     return TransferFunction(k * top, bottom, time_delay)
 end
@@ -242,7 +247,7 @@ evaluate(tf, 2.0 + 3.0im) # also takes imaginary numbers as input
 ```
 """
 function evaluate(tf::TransferFunction, z::Number)
-    return polyval(tf.numerator, z) / polyval(tf.denominator, z) * exp(-tf.time_delay * z)
+    return tf.numerator(z) / tf.denominator(z) * exp(-tf.time_delay * z)
 end
 
 """

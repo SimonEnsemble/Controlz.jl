@@ -43,11 +43,11 @@ end
 #   p_b(s) + p_c(s) e^ {-ϕs}
 struct CLTFStandard
     # numerator
-    p_a::Poly
+    p_a::Polynomial
     θ::Union{Float64, Int}
     # denominator
-    p_b::Poly
-    p_c::Poly
+    p_b::Polynomial
+    p_c::Polynomial
     ϕ::Union{Float64, Int}
 end
 

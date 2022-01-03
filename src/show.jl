@@ -1,7 +1,7 @@
 """
 Convert a polynomial to a string for printing.
 """
-function poly_to_string(poly::Poly)
+function poly_to_string(poly::Polynomial)
     io = IOBuffer();
     printpoly(io, poly, descending_powers=true)
     return String(take!(io))
@@ -16,8 +16,6 @@ end
 function Base.show(io::IO, tf::TransferFunction)
     top = poly_to_string(tf.numerator)
     bottom = poly_to_string(tf.denominator)
-
-    print(io, "\n")
 
     # is this a rational polynomial? then just print the numerator / constant
     if degree(tf.denominator) == 0
@@ -51,6 +49,17 @@ function Base.show(io::IO, tf::TransferFunction)
     end
     print(io, bottom)
     return nothing
+end
+
+function Base.show(io::IO, g::ClosedLoopTransferFunction)
+    println(io, "closed-loop transfer function.
+      top
+    -------
+    1 + g_ol")
+    println(io, "\n  top = ")
+    show(io, g.top)
+    println(io, "\n\n  g_ol = ")
+    show(io, g.g_ol)
 end
 
 function Base.show(io::IO, pc::PController)

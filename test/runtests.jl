@@ -13,8 +13,8 @@ const s = TransferFunction([1, 0], [1])
     @test TransferFunction([1], [3, 2], 0.0) == TransferFunction([1], [3, 2])
     tf = TransferFunction([1], [3, 2], 3.2)
     @test tf.time_delay == 3.2
-    @test tf.numerator == Poly([1], :s)
-    @test tf.denominator == Poly([2, 3], :s) # reverse order
+    @test tf.numerator == Polynomial([1], :s)
+    @test tf.denominator == Polynomial([2, 3], :s) # reverse order
     # special constructors
     @test first_order_system(5.0, 8.0) == 5 / (8 * s + 1)
     @test second_order_system(5.0, 8.0, 0.1) == 5 / (8^2 * s^2 + 2*8*0.1*s + 1)
@@ -219,7 +219,7 @@ const s = TransferFunction([1, 0], [1])
     #  characteristic eqn.
     ###
     g_ol = 4 / (s + 3) / (s + 2) / (s + 1)
-    @test isapprox(characteristic_polynomial(g_ol), Poly([10.0, 11, 6, 1], :s))
+    @test isapprox(characteristic_polynomial(g_ol), Polynomial([10.0, 11, 6, 1], :s))
 
     ###
     #   order
@@ -430,6 +430,12 @@ end
     m = gain_phase_margins(g_ol)
     @test isapprox(m.ω_c, 6.32, atol=0.01)
     @test isapprox(m.gain_margin, 5.397, atol=0.01)
+
+    # check asymptote behavior
+    g_ol = 1 / (s + 1) # ω_c d.n.e.
+    m = gain_phase_margins(g_ol)
+    @test isnan(m.ω_c)
+    @test isnan(m.gain_margin)
 end
 
 @testset "closed loop stuff" begin
@@ -439,9 +445,9 @@ end
     
     # test conversion into standard form
     cls = Controlz.CLTFStandard(cl)
-    @test cls.p_a ≈ Poly([3, 300], :s)
-    @test cls.p_b ≈ Poly([1, 101, 100], :s)
-    @test cls.p_c ≈ Poly([18, 18], :s)
+    @test cls.p_a ≈ Polynomial([3, 300], :s)
+    @test cls.p_b ≈ Polynomial([1, 101, 100], :s)
+    @test cls.p_c ≈ Polynomial([18, 18], :s)
     @test cls.ϕ ≈ 1.0
 	@test cls.θ ≈ 5.0
 
@@ -460,4 +466,9 @@ end
     data_old = simulate(gp * gc / (1 + gp * gc), 10.0)
     data_new = simulate(ClosedLoopTransferFunction(gp * gc, gp * gc), 10.0)
     @test isapprox(data_old[:, :output], data_new[:, :output], atol=0.0001)
+end
+
+@testset "example notebook (also to generate images for docs)" begin
+    include(joinpath("..", "examples", "examples.jl"))
+    @test true
 end
