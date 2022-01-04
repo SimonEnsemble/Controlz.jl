@@ -22,5 +22,6 @@ makedocs(
 
 deploydocs(
     repo = "github.com/SimonEnsemble/Controlz.jl.git",
-    devbranch = "main"
+    devbranch = "main",
+    push_preview=true
 )
