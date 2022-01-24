@@ -106,7 +106,7 @@ const s = TransferFunction([1, 0], [1])
     gc = Kc * (τI * s + 1) / (τI * s)
     y_ovr_y_sp = gc * gp / (1 + gc * gp)
     y_ovr_y_sp = pole_zero_cancellation(y_ovr_y_sp)
-    @test isapprox(y_ovr_y_sp, TransferFunction([τI, 1], [τI*τ/(Kc*K), τI*(1+Kc*K)/(Kc*K), 1]))
+    @test isapprox(y_ovr_y_sp, TransferFunction([τI, 1], [τI*τ/(Kc*K), τI*(1+Kc*K)/(Kc*K), 1]), atol=1e-5)
 
     ###
     #  time delay
@@ -206,7 +206,7 @@ const s = TransferFunction([1, 0], [1])
     @test isapprox(pole_zero_cancellation((s-1)^2 / (s-1)), s-1)
     @test isapprox(pole_zero_cancellation((s-1) / (s-1)^2), 1/(s-1))
     @test isapprox(pole_zero_cancellation((2*s-2.0) / (s-1)^2), 2/(s-1))
-    @test isapprox(pole_zero_cancellation(s * (9*s+3) / (s * (3*s-3))), (9*s+3)/(3*s-3))
+    @test isapprox(pole_zero_cancellation(s * (9*s+3) / (s * (3*s-3))), (9*s+3)/(3*s-3), atol=1e-5)
     @test isapprox(pole_zero_cancellation(s^5/s), s^4)
     @test isapprox(pole_zero_cancellation(s^5*(s-1)/s/(s-1)), s^4)
     @test isapprox(pole_zero_cancellation(s^5*(s-1)/s/(s-1)*(s+2)), (s+2)*s^4)
