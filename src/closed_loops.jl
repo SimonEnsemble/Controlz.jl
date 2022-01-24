@@ -13,13 +13,28 @@ the resulting closed-loop transfer function is:
 
 # example
 
-```julia
+```jldoctest
 g_ol = 4 / (s + 1) * 2 / (s + 2)
 top = 5 / (s + 4)
 g = ClosedLoopTransferFunction(top, g_ol)
+# output
+closed-loop transfer function.
+      top
+    -------
+    1 + g_ol
+
+  top =
+    5.0
+-----------
+1.0*s + 4.0
+
+  g_ol =
+         8.0
+---------------------
+1.0*s^2 + 3.0*s + 2.0
 ```                                             
 
-# Arguments
+# attributes
 * `top::TransferFunction`: numerator
 * `g_ol::TransferFunction`: open-loop transfer function
 """

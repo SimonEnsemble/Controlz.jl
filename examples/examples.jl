@@ -70,6 +70,27 @@ end
 # ╔═╡ b4433a1c-7d03-440f-af08-51d6d5f6d822
 sim_second_order_response()
 
+# ╔═╡ a6b0f813-91ed-460b-b65f-76fdbd799e39
+md"## numerically invert the Laplace transform of a function in the frequency domain, back into the time domain.
+(usually an input)
+
+$\mathcal{L}[t \cos(at)]= \dfrac{s^2-a^2}{(s^2+a^2)^2}$
+"
+
+# ╔═╡ 8a510cf6-a0a1-490c-a2fa-f17251c098ce
+function invert_lt()
+	a = π
+	U = (s^2 - a^2) / (s^2 + a^2) ^ 2
+	data = simulate(U, 8.0, nb_time_points=300)
+
+	fig = viz_response(data, title="inverting an input U(s)", ylabel="u(t)",
+	                   savename="../docs/src/tcosat.png")
+	return fig
+end
+
+# ╔═╡ b1adc640-477f-42c7-92fa-d7de44f5fb8e
+invert_lt()
+
 # ╔═╡ f52a6b52-8202-4c3f-a7b4-4280ffc191d4
 md"## viz poles/zeros of a transfer function"
 
@@ -259,6 +280,9 @@ test_make_gif()
 # ╟─5bcd4573-7656-4ebe-ba88-45adf2cc4127
 # ╠═a25db436-2022-4c33-87fc-36f9b507823f
 # ╠═b4433a1c-7d03-440f-af08-51d6d5f6d822
+# ╟─a6b0f813-91ed-460b-b65f-76fdbd799e39
+# ╠═8a510cf6-a0a1-490c-a2fa-f17251c098ce
+# ╠═b1adc640-477f-42c7-92fa-d7de44f5fb8e
 # ╟─f52a6b52-8202-4c3f-a7b4-4280ffc191d4
 # ╠═4da06cb3-5086-4fe8-b728-a3f8e7e889c7
 # ╠═4cb723a0-d3de-4a98-8d41-0e045a161d07

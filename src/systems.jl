@@ -12,9 +12,11 @@ The characteristic polynomial is $1+g_{ol}(s)$. The roots of the characteristic 
 a polynomial of type `Polynomial`
 
 # Example
-```
+```jldoctest
 g_ol = 4 / (s + 3) / (s + 2) / (s + 1)
-characteristic_polynomial(g_ol) # s³ + 6s² + 11s + 10, a `Poly`
+characteristic_polynomial(g_ol)
+# output
+Polynomials.Polynomial(10.0 + 11.0*s + 6.0*s^2 + 1.0*s^3)
 ```
 """
 function characteristic_polynomial(g_ol::TransferFunction)

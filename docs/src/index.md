@@ -2,11 +2,15 @@
 
 `Controlz.jl` is a pure-[Julia](https://julialang.org/) package to analyze and simulate process dynamics and control systems using transfer function representations.
 
-for example, to simulate the unit step response of a second-order, underdamped system characterized by the transfer function
+e.g., the code below simulates the unit step response of a second-order, underdamped system: 
 
-$$g(s) = \dfrac{4}{4s^2 + 0.8s +1}$$
+![](assets/simple_example.png)
 
-the output $Y(s)$ follows from $g(s)U(s)$, where $U(s)$ is the input.
+with
+* transfer function $g(s) = \dfrac{4}{4s^2 + 0.8s +1}$
+* input $U(s)=\mathcal{L}[u(t)]$
+* output $Y(s)=\mathcal{L}[y(t)]=g(s)U(s)$
+where $\mathcal{L}[\cdot]$ is the Laplace transform that maps a function in the time domain $t\in\mathbb{R}$ to the frequency domain $s\in\mathbb{C}$.
 
 ```julia
 using Controlz
@@ -24,6 +28,6 @@ viz_response(data, plot_title="SO underdamped step response")
 
 # install the `Controlz.jl` package in Julia
 
-`Controlz.jl` is an officially registered Julia package. install in the Julia REPL by typing `]` to go into package mode, then `add Controlz`.
+`Controlz.jl` is an officially registered Julia package. install in the Julia REPL by typing `]` to enter package mode, then `add Controlz`.
 
-I recommend interactive [Pluto notebooks](https://github.com/fonsp/Pluto.jl) for coding in Julia, whose automatic package manager installs `Controlz.jl` upon running `using Controlz`.
+to write `Controlz.jl` code interactively and display the outputs, use the interactive [Pluto notebook](https://github.com/fonsp/Pluto.jl). Its automatic package manager installs `Controlz.jl` upon running `using Controlz` in a code cell.
