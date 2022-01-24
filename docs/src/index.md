@@ -2,9 +2,15 @@
 
 `Controlz.jl` is a pure-[Julia](https://julialang.org/) package to analyze and simulate process dynamics and control systems using transfer function representations.
 
-for example, to simulate the unit step response of a second-order, underdamped system characterized by the transfer function $$g(s) = \dfrac{4}{4s^2 + 0.8s +1}$$, the output $Y(s)$ follows from $g(s)U(s)$, where $U(s)$ is the input.
+e.g., the code below simulates the unit step response of a second-order, underdamped system: 
 
 ![](assets/simple_example.png)
+
+with
+* transfer function $g(s) = \dfrac{4}{4s^2 + 0.8s +1}$
+* input $U(s)=\mathcal{L}[u(t)]$
+* output $Y(s)=\mathcal{L}[y(t)]=g(s)U(s)$
+where $\mathcal{L}[\cdot]$ is the Laplace transform that maps a function in the time domain $t\in\mathbb{R}$ to the frequency domain $s\in\mathbb{C}$.
 
 ```julia
 using Controlz

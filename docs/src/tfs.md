@@ -5,9 +5,18 @@ end
 ```
 # transfer functions
 
-the response [output, $Y(s)$] of a linear, time-invariant system to any input [$U(s)$] is characterized by a transfer function $g(s)=Y(s)/U(s)$, with $s$ a complex variable.
+
+consider the linear, time-invariant system:
 
 ![](assets/simple_input_output.png)
+
+with:
+* input $U(s)=\mathcal{L}[u(t)]$
+* output $Y(s)=\mathcal{L}[y(t)]$
+
+the output for an input is characterized by a transfer function $g(s)=Y(s)/U(s)$.
+
+here, $\mathcal{L}[\cdot]$ is the Laplace transform that maps a function in the time domain $t\in\mathbb{R}$ into the frequency domain $s\in\mathbb{C}$.
 
 a data structure, `TransferFunction`, represents a transfer function. 
 
@@ -19,7 +28,8 @@ $$g(s)=\dfrac{5s+1}{s^2 + 4s+5}$$.
 *constructor 1.* we can construct $g(s)$ in an intuitive way that resembles the algebraic expression:
 
 ```jldoctest
-julia> g = (5 * s + 1) / (s ^ 2 + 4 * s + 5) # method 1
+g = (5 * s + 1) / (s ^ 2 + 4 * s + 5) # construction method 1
+# output
      5.0*s + 1.0
 ---------------------
 1.0*s^2 + 4.0*s + 5.0
@@ -27,7 +37,8 @@ julia> g = (5 * s + 1) / (s ^ 2 + 4 * s + 5) # method 1
 
 *constructor 2.* alternatively, we can construct a `TransferFunction` using the coefficients associated with the powers of $s$ in the polynomials composing the numerator and denominator, respectively, of the rational function $g(s)$. coefficients of the highest powers of $s$ are listed first.
 ```jldoctest gdef; output=false
-julia> g = TransferFunction([5, 1], [1, 4, 5]) # method 2
+g = TransferFunction([5, 1], [1, 4, 5]) # construction method 2
+# output
      5.0*s + 1.0
 ---------------------
 1.0*s^2 + 4.0*s + 5.0
@@ -36,38 +47,42 @@ julia> g = TransferFunction([5, 1], [1, 4, 5]) # method 2
 !!! note
     under the hood, `s == TransferFunction([1, 0], [1])`.
 
-### time delays
-
-to construct a transfer function with a time delay, such as $$g(s)=\dfrac{3}{2s+1}e^{-2s}$$...
-
-```jldoctest gdef
-julia> θ = 2.0                              # time delay
-julia> g = 3 / (2 * s + 1) * exp(-θ * s)    # method 1
-julia> g = TransferFunction([3], [2, 1], θ) # method 2
-    3.0
------------ e^(-2.0*s)
-2.0*s + 1.0
-```
-
 ## accessing attributes of a transfer function
 as rational functions associated with a time delay, each `TransferFunction` data structure has a `numerator`, `denominator`, and `time_delay` attribute. access as follows:
 
 ```jldoctest gdef
-julia> g.numerator
+g.numerator
+# output
 Polynomials.Polynomial(1.0 + 5.0*s)
 ```
 
 ```jldoctest gdef
-julia> g.denominator
+g.denominator
+# output
 Polynomials.Polynomial(5.0 + 4.0*s + 1.0*s^2)
 ```
 
 ```jldoctest gdef
-julia> g.time_delay
+g.time_delay
+# output
 0.0
 ```
 
 `g.numerator` and `g.denominator` are `Polynomial`s from [Polynomials.jl](https://github.com/JuliaMath/Polynomials.jl).
+
+## time delays
+
+to construct a transfer function with a time delay, such as $$g(s)=\dfrac{3}{2s+1}e^{-2s}$$...
+
+```jldoctest gdeftd
+θ = 2.0                              # time delay
+g = 3 / (2 * s + 1) * exp(-θ * s)    # construction method 1
+g = TransferFunction([3], [2, 1], θ) # construction method 2
+# output
+    3.0
+----------- e^(-2.0*s)
+2.0*s + 1.0
+```
 
 ## zeros, poles, k-factor representation
 
@@ -84,7 +99,8 @@ $$g(s)=\dfrac{5s+1}{s^2 + 4s+5}=5\dfrac{(s+1/5)}{(s+2+i)(s+2-i)}$$
 #### constructing a transfer function from its zeros, poles and k-factor
 
 ```jldoctest
-julia> g = zeros_poles_k([-1/5], [-2 + im, -2 - im], 5.0, time_delay=0.0)  # method 3
+g = zeros_poles_k([-1/5], [-2 + im, -2 - im], 5.0, time_delay=0.0)  # construction method 3
+# output
      5.0*s + 1.0
 ---------------------
 1.0*s^2 + 4.0*s + 5.0
@@ -96,9 +112,10 @@ julia> g = zeros_poles_k([-1/5], [-2 + im, -2 - im], 5.0, time_delay=0.0)  # met
 #### computing the poles, zeros, and k-factor of a transfer function
 
 ```jldoctest
-julia> g = (5 * s + 1) / (s ^ 2 + 4 * s + 5)
-julia> z, p, k = zeros_poles_k(g) # [-0.2], [-2-im, -2+im], 5
-([-0.2], ComplexF64[-2.0000000000000004 - 1.0000000000000004im, -2.0000000000000004 + 1.0000000000000004im], 5.0)
+g = (5 * s + 1) / (s ^ 2 + 4 * s + 5)
+z, p, k = zeros_poles_k(g)
+# output
+([-0.2], ComplexF64[-2.0 - 1.0im, -2.0 + 1.0im], 5.0)
 ```
 
 ## transfer function algebra
@@ -106,16 +123,18 @@ julia> z, p, k = zeros_poles_k(g) # [-0.2], [-2-im, -2+im], 5
 add `+`, subject `-`, multiply `*`, and divide `/` transfer functions.
 
 ```jldoctest alg
-julia> g₁ = 3 / (s + 2)
-julia> g₂ = 1 / (s + 4)
-julia> g_product = g₁ * g₂
+g₁ = 3 / (s + 2)
+g₂ = 1 / (s + 4)
+g_product = g₁ * g₂
+# output
          3.0
 ---------------------
 1.0*s^2 + 6.0*s + 8.0
 ```
 
 ```jldoctest alg
-julia> g_sum = g₁ + g₂
+g_sum = g₁ + g₂
+# output
     4.0*s + 14.0
 ---------------------
 1.0*s^2 + 6.0*s + 8.0
@@ -125,8 +144,9 @@ julia> g_sum = g₁ + g₂
 
 for example, to evaluate $g(s)=\dfrac{4}{s+2}$ at $s=-2+i$:
 ```jldoctest
-julia> g = 4 / (s + 2)
-julia> evaluate(g, - 2 + im)
+g = 4 / (s + 2)
+evaluate(g, - 2 + im)
+# output
 0.0 - 4.0im
 ```
 
@@ -135,8 +155,9 @@ julia> evaluate(g, - 2 + im)
 compute the zero-frequency gain of a transfer function $g(s)$, which is $g(s)$ evaluated at $s=0$, as follows:
 
 ```jldoctest
-julia> g = (5 * s + 1) / (s ^ 2 + 4 * s + 5)
-julia> zero_frequency_gain(g)
+g = (5 * s + 1) / (s ^ 2 + 4 * s + 5)
+zero_frequency_gain(g)
+# output
 0.2
 ```
 
@@ -147,9 +168,10 @@ the zero-frequency gain is the ratio of the steady state output value to the ste
 compute the poles, zeros, and zero-frequency gain of a transfer function all at once as follows:
 
 ```jldoctest
-julia> g = (5 * s + 5) / (s ^ 2 + 4 * s + 5)
-julia> z, p, gain = zeros_poles_gain(g)
-([-1.0], ComplexF64[-2.0000000000000004 - 1.0000000000000004im, -2.0000000000000004 + 1.0000000000000004im], 1.0)
+g = (5 * s + 5) / (s ^ 2 + 4 * s + 5)
+z, p, gain = zeros_poles_gain(g)
+# output
+([-1.0], ComplexF64[-2.0 - 1.0im, -2.0 + 1.0im], 1.0)
 ```
 
 ## cancel poles and zeros
@@ -158,11 +180,12 @@ cancel pairs of identical poles and zeros in a transfer function as follows:
 
 ```jldoctest
 # define g(s) = s * (s+1) / ((s+3) * s * (s+1) ^ 2)
-julia> g = TransferFunction([1, 1, 0], [1, 5, 7, 3, 0])
-julia> pole_zero_cancellation(g) # 1 / ((s+3) * (s+1))
-                1.0
------------------------------------
-1.0*s^2 + 4.000000000000003*s + 3.0
+g = TransferFunction([1, 1, 0], [1, 5, 7, 3, 0])
+pole_zero_cancellation(g) # 1 / ((s+3) * (s+1))
+# output
+         1.0
+---------------------
+1.0*s^2 + 4.0*s + 3.0
 ```
 
 under the hood, `pole_zero_cancellation` compares all pairs of poles and zeros to look for identical pairs via `isapprox`. after removing identical pole-zero pairs, we reconstruct the transfer function from the remaining poles and zeros---in addition to its k-factor. we ensure that the coefficients in the resulting rational function are real.
@@ -171,10 +194,11 @@ under the hood, `pole_zero_cancellation` compares all pairs of poles and zeros t
     pole-zero cancellation is done automatically when multiplying, dividing, adding, and subtracting transfer functions, as illustrated below.
 
 ```jldoctest
-julia> g = s * (s+1) / ((s+3) * s * (s+1) ^ 2)
-                1.0
------------------------------------
-1.0*s^2 + 4.000000000000003*s + 3.0
+g = s * (s+1) / ((s+3) * s * (s+1) ^ 2)
+# output
+         1.0
+---------------------
+1.0*s^2 + 4.0*s + 3.0
 ```
 
 ## the order of a transfer function
@@ -182,8 +206,9 @@ julia> g = s * (s+1) / ((s+3) * s * (s+1) ^ 2)
 we can find the *apparent* order of the polynomials in the numerator and denominator of the rational function comprising the transfer function:
 
 ```jldoctest
-julia> g = (s + 1) / ((s + 2) * (s + 3))
-julia> system_order(g)
+g = (s + 1) / ((s + 2) * (s + 3))
+system_order(g)
+# output
 (1, 2)
 ```
 
@@ -198,9 +223,9 @@ compute the critical frequency, gain crossover frequency, gain margin, and phase
 $$g_{ol}(s)=\dfrac{2e^{-s}}{5s+1}$$
 
 ```jldoctest margins
-julia> g_ol = 2 * exp(-s) / (5 * s + 1)
-
-julia> margins = gain_phase_margins(g_ol)
+g_ol = 2 * exp(-s) / (5 * s + 1)
+margins = gain_phase_margins(g_ol)
+# output
 -- gain/phase margin info--
 	critical frequency ω_c [rad/time]:       1.68868
 	gain crossover frequency ω_g [rad/time]: 0.34641
@@ -209,11 +234,12 @@ julia> margins = gain_phase_margins(g_ol)
 ```
 
 access the attributes of `margins` via:
-```jldoctest margins
-julia> margins.ω_c          # critical freq. (radians / time)
-julia> margins.ω_g          # gain crossover freq. (radians / time)
-julia> margins.gain_margin  # gain margin
-julia> margins.phase_margin # phase margin (radians)
+```jldoctest margins; output=false
+margins.ω_c          # critical freq. (radians / time)
+margins.ω_g          # gain crossover freq. (radians / time)
+margins.gain_margin  # gain margin
+margins.phase_margin # phase margin (radians)
+# output
 1.7479849408794201
 ```
 
@@ -228,9 +254,10 @@ $$g(s)=\frac{K}{\tau s +1}$$
 easily construct:
 
 ```jldoctest
-julia> K = 2.0
-julia> τ = 3.0
-julia> g = first_order_system(K, τ)
+K = 2.0
+τ = 3.0
+g = first_order_system(K, τ)
+# output
     2.0
 -----------
 3.0*s + 1.0
@@ -238,8 +265,9 @@ julia> g = first_order_system(K, τ)
 
 compute time constant:
 ```jldoctest
-julia> g = 10 / (6 * s + 2)
-julia> time_constant(g)
+g = 10 / (6 * s + 2)
+time_constant(g)
+# output
 3.0
 ```
 
@@ -250,10 +278,11 @@ $$g(s)=\frac{K}{\tau^2 s^2 + 2\tau \xi s +1}$$
 easily construct:
 
 ```jldoctest sotf
-julia> K = 1.0
-julia> τ = 2.0
-julia> ξ = 0.1
-julia> g = second_order_system(K, τ, ξ)
+K = 1.0
+τ = 2.0
+ξ = 0.1
+g = second_order_system(K, τ, ξ)
+# output
          1.0
 ---------------------
 4.0*s^2 + 0.4*s + 1.0
@@ -261,11 +290,14 @@ julia> g = second_order_system(K, τ, ξ)
 
 compute time constant, damping coefficient:
 ```jldoctest sotf
-julia> τ = time_constant(g)
+τ = time_constant(g)
+# output
 2.0
 ```
+
 ```jldoctest sotf
-julia> ξ = damping_coefficient(g)
+ξ = damping_coefficient(g)
+# output
 0.1
 ```
 
@@ -286,19 +318,20 @@ we construct these two closed-loop transfer functions as `gr` and `gs` as follow
 
 ```jldoctest cltf
 # PI controller transfer function
-julia> pic = PIController(1.0, 2.0)
-julia> gc = TransferFunction(pic)
+pic = PIController(1.0, 2.0)
+gc = TransferFunction(pic)
 
 # process, sensor dynamics
-julia> gu = 2 / (4 * s + 1) * exp(-0.5 * s)
-julia> gm = 1 / (s + 1) * exp(-0.1 * s)
-julia> gd = 6 / (6 * s + 1)
+gu = 2 / (4 * s + 1) * exp(-0.5 * s)
+gm = 1 / (s + 1) * exp(-0.1 * s)
+gd = 6 / (6 * s + 1)
 
 # open-loop transfer function
-julia> g_ol = gc * gu * gm
+g_ol = gc * gu * gm
 
 # closed-loop transfer function for regulator response
-julia> gr = ClosedLoopTransferFunction(gd, g_ol)
+gr = ClosedLoopTransferFunction(gd, g_ol)
+# output
 closed-loop transfer function.
       top
     -------
@@ -314,9 +347,11 @@ closed-loop transfer function.
 -------------------------- e^(-0.6*s)
 8.0*s^3 + 10.0*s^2 + 2.0*s
 ```
+
 ```jldoctest cltf
 # closed-loop transfer function for servo response
->julia gs = ClosedLoopTransferFunction(g_ol, g_ol)
+gs = ClosedLoopTransferFunction(g_ol, g_ol)
+# output
 closed-loop transfer function.
       top
     -------

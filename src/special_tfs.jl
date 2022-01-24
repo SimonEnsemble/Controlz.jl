@@ -6,10 +6,14 @@ construct a first-order transfer function with gain `K` and time constant `τ`:
 $$g(s)=\frac{K}{\tau s+1}$$
 
 # example
-```julia
+```jldoctest
 K = 1.0
 τ = 3.0
-g = first_order_system(K, τ) # 1 / (3 * s + 1)
+g = first_order_system(K, τ)
+# output
+    1.0
+-----------
+3.0*s + 1.0
 ```
 
 # returns
@@ -25,11 +29,15 @@ construct a second-order transfer function with gain `K`, time constant `τ`, an
 $$g(s)=\frac{K}{\tau^2 s^2 + 2\tau \xi s +1}$$
 
 # example
-```julia
+```jldoctest
 K = 1.0
 τ = 2.0
 ξ = 0.1
-g = second_order_system(K, τ, ξ) # 1 / (4 * s^2 + 0.4 * s + 1)
+g = second_order_system(K, τ, ξ)
+# output
+         1.0
+---------------------
+4.0*s^2 + 0.4*s + 1.0
 ```
 
 # returns
@@ -54,12 +62,17 @@ $$g(s)=\frac{K}{\tau^2 s^2 + 2\tau \xi s +1}$$
 `τ::Float64`: the time constant.
 
 # examples
-```julia
+
+```jldoctest
 g = 4 / (6 * s + 2)
-time_constant(g) # 3.0
+time_constant(g)
+# output 
+3.0
 
 g = 1.0 / (8 * s^2 + 0.8 * s + 2)
-time_constant(g) # 2.0
+time_constant(g) 
+# output
+2.0
 ```
 """
 function time_constant(g::TransferFunction)
@@ -87,9 +100,11 @@ $$g(s)=\frac{K}{\tau^2 s^2 + 2\tau \xi s +1}$$
 `ξ::Float64`: the damping coefficient
 
 # examples
-```julia
+```jldoctest
 g = 1.0 / (8 * s^2 + 0.8 * s + 2)
-damping_coefficient(g) # 0.1
+damping_coefficient(g)
+# output
+0.1
 ```
 """
 function damping_coefficient(g::TransferFunction)

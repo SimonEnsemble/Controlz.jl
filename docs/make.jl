@@ -16,7 +16,8 @@ makedocs(
              "Simulation" => "sim.md",
              "Visualization" => "viz.md",
              "Control systems" => "controls.md",
-             "FAQ" => "faq.md"],
+             "FAQ" => "faq.md"
+             ],
     format = Documenter.HTML(assets = ["assets/flux.css"])
 )
 

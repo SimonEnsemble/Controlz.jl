@@ -6,7 +6,7 @@ import Base.*, Base./, Base.+, Base.-, Base.==, Base.^, Base.exp, Base.isapprox
 
 construct a transfer function representing a linear, time-invariant system.
 
-# Example
+# example
 to construct the transfer function
 
 ```math
@@ -23,7 +23,7 @@ tf = TransferFunction([4], [2, 1], 2.2)
 2.0*s + 1.0
 ```
 
-# Attributes
+# attributes
 * `numerator::Polynomial{Float64, :s}`: the polynomial in the numerator of the transfer function
 * `denominator::Polynomial{Float64, :s}`: the polynomial in the denominator of the transfer function
 * `time_delay::Float64`: the associated time delay
@@ -132,9 +132,13 @@ this is achieved by multiplying by 1.0 in a fancy way such that the highest powe
 
 # Example
 
-```julia
+```jldoctest
 g = 8.0 / (2 * s^2 + 3 * s + 4)
-g_zpk = zpk_form(g) # 4 / (s^2 + 1.5 s + 2)
+g_zpk = zpk_form(g)
+# output
+         4.0
+---------------------
+1.0*s^2 + 1.5*s + 2.0
 ```
 """
 function zpk_form(tf::TransferFunction)
@@ -146,11 +150,12 @@ function zpk_form(tf::TransferFunction)
         tf.time_delay)
 end
 
-function isapprox(tf1::TransferFunction, tf2::TransferFunction)
+function isapprox(tf1::TransferFunction, tf2::TransferFunction; atol=0.0)
     # to directly compare numerators and denominators, put in zpk form
     tf1s = zpk_form(tf1)
     tf2s = zpk_form(tf2)
-    return isapprox(tf1s.time_delay, tf2s.time_delay) && isapprox(tf1s.numerator, tf2s.numerator) && isapprox(tf1s.denominator, tf2s.denominator)
+    return isapprox(tf1s.time_delay, tf2s.time_delay, atol=atol) && isapprox(
+	    tf1s.numerator.coeffs, tf2s.numerator.coeffs, atol=atol) && isapprox(tf1s.denominator.coeffs, tf2s.denominator.coeffs, atol=atol)
 end
 
 _zeros(tf::TransferFunction) = roots(tf.numerator)
@@ -172,9 +177,11 @@ the zero-frequency gain "represents the ratio of the steady state value of the o
 
 # example
 
-```julia
+```jldoctest
 g = 5 / (3 * s + 1)
-K = zero_frequency_gain(g) # K = 5.0
+K = zero_frequency_gain(g)
+# output
+5.0
 ```
 
 # arguments
@@ -237,13 +244,17 @@ zeros_poles_gain(tf::TransferFunction) = _zeros(tf), _poles(tf), zero_frequency_
 """
     evaluate(tf, z)
 
-Evaluate a `TransferFunction`, `tf`, at a particular number `z`.
+evaluate a `TransferFunction`, `tf`, at a particular number `z` (could be complex).
 
-# Examples
-```
+# example
+```jldoctest eval
 tf = TransferFunction([1], [3, 1])
-evaluate(tf, 1.0) # 0.25
-evaluate(tf, 2.0 + 3.0im) # also takes imaginary numbers as input
+evaluate(tf, 1.0)
+# output
+0.25
+```
+
+```jldoctest eval
 ```
 """
 function evaluate(tf::TransferFunction, z::Number)
@@ -266,23 +277,31 @@ strictly_proper(tf::TransferFunction) = degree(tf.numerator) < degree(tf.denomin
 
 
 """
-    tf = pole_zero_cancellation(tf, verbose=false)
+    tf = pole_zero_cancellation(tf, verbose=false, digits=8)
 
-find pairs of identical poles and zeros and return a new transfer function with the appropriate poles and zeros cancelled. 
-this is achieved by comparing the poles and zeros with `isapprox` and canceling if e.g., a pole is equal to a zero.
+find (pole, zero) pairs such that pole = zero and return a new transfer function with those pairs cancelled.
+this is achieved by comparing the poles and zeros with `isapprox`, with poles and zeros rounded to 
+`digits` digits (also applies to reconstruction).
 
-# Arguments
+# arguments
 * `tf::TransferFunction`: the transfer function
 * `verbose::Bool=false`: print off which poles, zeros are cancelled.
+* `digits::Int`: number of digits to round poles and zeros to, for (i) cancelling and (ii) reconstruction.
 
-# Example
-```
-pole_zero_cancellation(s * (s - 1) / (s * (s + 1))) # (s-1)/(s+1)
+# example
+```jldoctest
+pole_zero_cancellation(s * (s - 1) / (s * (s + 1)))
+# output
+1.0*s - 1.0
+-----------
+1.0*s + 1.0
 ```
 """
-function pole_zero_cancellation(tf::TransferFunction; verbose::Bool=false)
+function pole_zero_cancellation(tf::TransferFunction; verbose::Bool=false, digits::Int=6)
     # compute poles, zeros, and k-factor of the transfer function
     zs, ps, k = zeros_poles_k(tf)
+    zs = round.(zs, digits=digits)
+    ps = round.(ps, digits=digits)
 
     # store in these boolean arrays whether we will cancel them or not
     canceled_zeros = [false for i = 1:length(zs)]
@@ -293,7 +312,7 @@ function pole_zero_cancellation(tf::TransferFunction; verbose::Bool=false)
         for (i_p, p) in enumerate(ps)
             # the pole and zero are equal...
             # *and* if this pole has not already been canceled...
-            if isapprox(p, z) && (! canceled_poles[i_p])
+	    if isapprox(p, z) && (! canceled_poles[i_p])
                 canceled_zeros[i_z] = true
                 canceled_poles[i_p] = true
                 break
@@ -324,21 +343,16 @@ use [`pole_zero_cancellation`](@ref) first if you wish to cancel poles and zeros
 `o::Tuple{Int, Int}`: (order of numerator, order of denominator)
 
 # examples
-```julia
+```jldoctest
 g = 1 / (s + 1)
-system_order(g) # (0, 1)
+system_order(g)
+# output 
+(0, 1)
 
 g = (s + 1) / ((s + 2) * (s + 3))
-system_order(g) # (1, 2)
-```
-
-where `pole_zero_cancellation` is necessary:
-``julia
-g = (s + 1) / (s + 1) ^ 2
-system_order(g) # (1, 2)
-
-g = pole_zero_cancellation(g) # 1 / (s + 1)
-system_order(g) # (0, 1)
+system_order(g)
+# output
+(1, 2)
 ```
 """
 function system_order(tf::TransferFunction)
