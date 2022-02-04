@@ -21,7 +21,7 @@ Y = g * U                         # system output, Y(s)
 
 data = simulate(Y, 50.0)          # simulate until t = 50
 
-viz_response(data, plot_title="SO underdamped step response")
+viz_response(data, title="SO underdamped step response")
 ```
 
 ![](SO_underdamped_step_response.png)
