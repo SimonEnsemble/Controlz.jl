@@ -18,7 +18,7 @@ g = 4 / (4 * s ^ 2 + 0.8 * s + 1)
 U = 1 / s
 Y = g * U
 data = simulate(Y, (0.0, 50.0))
-viz_response(data, plot_title="SO underdamped step response")
+viz_response(data, title="SO underdamped step response")
 ```
 
 ![](SO_underdamped_step_response.png)
