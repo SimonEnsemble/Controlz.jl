@@ -58,8 +58,8 @@ in other words, `simulate` inverts an expression in the frequency domain into th
 
 # arguments
 * `Y::Union{TransferFunction, ClosedLoopTransferFunction}`: the Laplace transform of the output $y(t)$. usually formed by $g(s)U(s)$, where $U(s)$ is the Laplace transform of the input and $g(s)$ is the transfer function governing the dynamics of the system.
-* `final_time::Tuple{Float64, Float64}`: the duration over which to simulate the output of the LTI system, starting at time zero.
-* `nb_time_points::Int=100`: the number of time points at which to save the solution $y(t)$
+* `final_time::Union{Int64, Float64}`: the duration over which to simulate the output of the LTI system, starting at time zero.
+* `nb_time_points::Int=100`: the number of time points at which to save the solution $y(t)$.
 
 two time points preceding $t=0$ are included to illustrate that it is assumed $y(t)=0$ for $t<0$.
 
@@ -69,16 +69,27 @@ two time points preceding $t=0$ are included to illustrate that it is assumed $y
 # examples
 simulate the first order step response to a step, given the Laplace transform of the output, `Y`:
 
-```
+```jldoctest
 g = 4 / (3 * s + 1)      # first-order transfer function g(s)
 U = 1 / s                # unit step input U(s)
 Y = g / s                # output Y(s)
 data = simulate(Y, 12.0) # time series data frame
 data[:, :t]              # array of time points tᵢ
 data[:, :output]         # array of corresponding outputs y(tᵢ)
+first(data, 5)           # show the first 5 rows of the data frame
+# output
+5×2 DataFrame
+ Row │ t          output     
+     │ Float64    Float64    
+─────┼───────────────────────
+   1 │ -0.6       0.0
+   2 │ -1.0e-5    0.0
+   3 │  1.0e-5    1.33333e-5
+   4 │  0.123721  0.161606
+   5 │  0.247432  0.316671
 ```
 """
-function simulate(Y::TransferFunction, final_time::Float64; nb_time_points::Int=100)
+function simulate(Y::TransferFunction, final_time::Union{Float64, Int64}; nb_time_points::Int=100)
     if ! proper(Y)
         error("LTI system is not proper...")
     end
@@ -93,7 +104,7 @@ function simulate(Y::TransferFunction, final_time::Float64; nb_time_points::Int=
     x0 = deepcopy(B) # initial condition
 
     f(x, p, t) = A * x # RHS of ODE (ignore p for params)
-    prob = ODEProblem(f, x0, (0.0, final_time))
+    prob = ODEProblem(f, x0, (0.0, 1.0 * final_time))
     sol = solve(prob, d_discontinuities=[0.0])
 
     t = vcat([-0.05 * final_time, -1e-5], range(1e-5, final_time, length=nb_time_points - 2))
@@ -126,11 +137,15 @@ interpolate the data to approximate the function $y(t)$ at a new time `Τ`, i.e.
 # example
 the unit step response of a first-order process with time constant $\tau$ is $\approx 63\%$ of the final value when $t=\tau$.
 
-```julia
+```jldoctest
 τ = 3.45
 g = 1 / (τ * s + 1)           # FO system
-data = simulate(g / s, 10.0)  # unit step response
-y_at_τ = interpolate(data, τ) # 0.63
+U = 1 / s                     # input, U(s)
+Y = g * U                     # output, Y(s)
+data = simulate(g / s, 10.0)  # output, y(t)
+y_at_τ = interpolate(data, τ) # ≈ y(τ)
+# output
+0.6320802858877126
 ```
 """
 function interpolate(data::DataFrame, t̃::Float64)
