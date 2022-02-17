@@ -58,25 +58,25 @@ function viz_response(data::DataFrame;
 end
 
 """
-    viz_poles_and_zeros(g, savename=nothing)
+    viz_poles_and_zeros(g, savename=nothing, title::String="poles and zeros")
 
 plot the zeros and poles of the transfer function `g` in the complex plane.
 
 returns a `CairoMakie.jl` `Figure` object for further modification.
 """
-function viz_poles_and_zeros(tf::TransferFunction; savename::Union{Nothing, String}=nothing)
+function viz_poles_and_zeros(tf::TransferFunction; savename::Union{Nothing, String}=nothing, title::String="poles and zeros")
     z, p, k = zeros_poles_gain(tf)
     
     fig = Figure()
-	ax  = Axis(fig[1, 1], xlabel="Re", ylabel="Im", title="poles and zeros")
+    ax  = Axis(fig[1, 1], xlabel="Re", ylabel="Im", title=title)
     draw_axes(ax)
-	scatter!(real.(z), imag.(z), marker=:circle, label="zeros", markersize=15)
-	scatter!(real.(p), imag.(p), marker=:x, label="poles", markersize=15)
-	axislegend()
+    scatter!(real.(z), imag.(z), marker=:circle, label="zeros", markersize=15)
+    scatter!(real.(p), imag.(p), marker=:x, label="poles", markersize=15)
+    axislegend()
     if ! isnothing(savename)
         save(savename, fig, px_per_unit=1)
     end
-	return fig
+    return fig
 end
 
 """
