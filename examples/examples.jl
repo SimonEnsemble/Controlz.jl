@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.17.4
+# v0.18.0
 
 using Markdown
 using InteractiveUtils
@@ -8,7 +8,7 @@ using InteractiveUtils
 import Pkg; Pkg.activate()
 
 # ╔═╡ 5da3e954-e940-45a7-b355-45e78b5ce38b
-using Controlz, DataFrames, CairoMakie, ColorSchemes, Colors, Printf
+using Controlz, DataFrames, CairoMakie, ColorSchemes, Printf
 
 # ╔═╡ ecab99c5-d929-4a0a-9f81-89ae382aaf45
 set_theme!(cool_theme)
