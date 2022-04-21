@@ -84,7 +84,7 @@ finally, we can plot `y`, `ysp`, and `u` against `t` to visualize the response o
 also plotted separately is the contribution to the controller output by the P- and I- components of the PI controller, obtained via:
 ```julia
 U_Paction = Kc * E # P-action
-U_Iaction = Kc * τI / s * E # I-action
+U_Iaction = Kc / (τI * s) * E # I-action
 
 data_u_Paction = simulate(U_Paction, final_time)
 data_u_Iaction = simulate(U_Iaction, final_time)
