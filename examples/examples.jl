@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.18.0
+# v0.19.0
 
 using Markdown
 using InteractiveUtils
@@ -173,7 +173,7 @@ function sim_servo_response()
 
 	# break output into P-action, I-action
 	U_Paction = Kc * E
-	U_Iaction = Kc * τI / s * E
+	U_Iaction = Kc / (τI * s) * E
 	
 	# simulate for y, u, ysp in the time domain
 	final_time = 12.0
