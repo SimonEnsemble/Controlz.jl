@@ -1,4 +1,4 @@
-import Base.*, Base./
+import Base.*, Base./, Base.-
 
 """
 a closed-loop transfer function that relates an output `Y` and an input `U` in a feedback loop.
@@ -48,8 +48,11 @@ end
 *(tf::TransferFunction, tf_cl::ClosedLoopTransferFunction) = *(tf_cl::ClosedLoopTransferFunction, tf::TransferFunction)
 *(tf_cl::ClosedLoopTransferFunction, x::Number) = ClosedLoopTransferFunction(tf_cl.top * x, tf_cl.g_ol)
 *(x::Number, tf_cl::ClosedLoopTransferFunction) = *(tf_cl::ClosedLoopTransferFunction, x::Number)
+
 /(tf_cl::ClosedLoopTransferFunction, tf::TransferFunction) = ClosedLoopTransferFunction(tf_cl.top / tf, tf_cl.g_ol)
 /(tf_cl::ClosedLoopTransferFunction, x::Number) = ClosedLoopTransferFunction(tf_cl.top / x, tf_cl.g_ol)
+
+-(cltf::ClosedLoopTransferFunction) = -1 * cltf
 
 # representation of a closed loop system in standard form.
 # useful for converting into state space representation.
