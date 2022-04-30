@@ -1,0 +1,56 @@
+\documentclass{standalone} % run wit shell escape
+
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usepackage{verbatim}
+
+\usepackage{tikz}
+\usepackage{color}
+\definecolor{honeydew}{rgb}{0.94, 1.0, 0.94}
+\definecolor{ivory}{rgb}{1.0, 1.0, 0.94}
+
+
+\usetikzlibrary{shapes,arrows}
+\begin{document}
+
+
+\tikzstyle{block} = [draw, fill=honeydew!70, rectangle, line width=0.5mm,
+    minimum height=3em, minimum width=5em]
+\tikzstyle{sum} = [draw, fill=ivory!20, circle, node distance=1cm, line width=0.5mm]
+\tikzstyle{input} = [coordinate]
+\tikzstyle{output} = [coordinate]
+\tikzstyle{pinstyle} = [pin edge={to-,thick,black}]
+
+\tikzset{
+    circ/.style={draw, circle, fill=ivory!70}
+}
+
+
+% The block diagram code is probably more verbose than necessary
+\begin{tikzpicture}[auto, node distance=1cm,>=latex']
+    \node [block, node distance=1.5cm,label=process] (Gp) {$g_u(s)$};
+    \node [block, left of=Gp, node distance=3cm, label=controller] (Gc) {$g_c(s)$};
+    \node [circ, , line width=0.5mm, label={[label distance=-4.75mm]270:$-$},label={[label distance=-4.75mm]180:$+$}, minimum size=8mm, left of=Gc, node distance=2.5cm] (comparator) {};
+    \node [input, node distance=2cm, left of=comparator] (Ysp) {};
+   % \node [sum, right of=process, node distance=2.5cm] (sum) {};
+%    \node [block, right of=controller, pin={[pinstyle]above:D},
+%            node distance=3cm] (system) {System};
+	\node [output, name=output, right of=Gp, node distance=2.0cm] {};
+	\node [below of=comparator, node distance=1.5cm] (ptbelow) {};
+	\draw [->, line width=0.5mm] (Gc) -- node[name=h] {} (Gp);
+	
+%    \draw [->] (input) -- node[name=u] {$u$} (system);
+%    \node [output, right of=system] (output) {};
+%
+%    \draw [draw,->] (input) -- system {$r$} (sum);
+    \draw [->, line width=0.5mm] (Gc) -- node {$U(s)$} (Gp);
+    \draw [->, line width=0.5mm] (Gp) -- node[name=y] {$Y(s)$} (output);
+    \draw [->, line width=0.5mm] (comparator) -- node {$E(s)$} (Gc);
+    \draw [->, line width=0.5mm] (Ysp) -- node {$Y_{sp}(s)$} (comparator);
+
+    \draw [-, line width=0.5mm] (y) |- (ptbelow);
+    \draw [->, line width=0.5mm] (ptbelow) -| (comparator);
+%    \draw [->] (system) -- node [name=y] {$y$}(output);
+\end{tikzpicture}
+
+\end{document}
