@@ -460,6 +460,10 @@ end
     @test cl2.g_ol == cl.g_ol
     @test cl2.top == cl.top * 4 / s
 
+    cl3 = ClosedLoopTransferFunction(1 / (s + 1) * exp(-3 * s), 5 / (s + 2) * exp(-s))
+    @test (-cl3).g_ol == 5 / (s + 2) * exp(-s)
+    @test (-cl3).top == -1 / (s + 1) * exp(-3 * s)
+
     # run without a time delay to compare to other simulate function.
     gp = 3 / (s + 2)
     gc = TransferFunction(PIController(1.0, 3.0))
