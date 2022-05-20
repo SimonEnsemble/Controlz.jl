@@ -227,7 +227,7 @@ function bode_plot(g::TransferFunction; log10_ω_min::Float64=-3.0, log10_ω_max
 	end
 	axs[2].yticks = MultiplesTicks(4, pi, "π")
     lines!(axs[1], ω, abs.(g_iω))
-    lines!(axs[2], ω, ∠g_iω / π)
+    lines!(axs[2], ω, ∠g_iω)
     if ! isnothing(savename)
         save(savename, fig, px_per_unit=1)
     end
