@@ -7,6 +7,7 @@ using Printf
 using Roots
 using DataFrames
 using CairoMakie, ColorSchemes, Colors
+using PrecompileSignatures: @precompile_signatures
 
 include("plot_theme.jl")
 
@@ -40,4 +41,7 @@ export
     ClosedLoopTransferFunction,
     # plot_theme.jl
     cool_theme
+
+@precompile_signatures(Controlz)
+
 end
