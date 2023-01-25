@@ -1,7 +1,7 @@
 module Controlz
 
 using Polynomials
-using OrdinaryDiffEq
+using DifferentialEquations
 using Interpolations
 using Printf
 using Roots
