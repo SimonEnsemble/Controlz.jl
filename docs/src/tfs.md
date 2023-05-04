@@ -312,7 +312,7 @@ using block diagram algebra, we find the closed-loop transfer functions that rel
 
 $$g_r(s)=\dfrac{Y(s)}{D(s)}=\dfrac{g_d(s)}{1+g_c(s)g_u(s)g_m(s)}$$
 
-$$g_s(s)=\dfrac{Y(s)}{Y_{sp}(s)}=\dfrac{g_c(s)g_u(s)g_m(s)}{1+g_c(s)g_u(s)g_m(s)}$$
+$$g_s(s)=\dfrac{Y(s)}{Y_{sp}(s)}=\dfrac{g_c(s)g_u(s)}{1+g_c(s)g_u(s)g_m(s)}$$
 
 we construct these two closed-loop transfer functions as `gr` and `gs` as follows.
 
@@ -350,19 +350,19 @@ closed-loop transfer function.
 
 ```jldoctest cltf
 # closed-loop transfer function for servo response
-gs = ClosedLoopTransferFunction(g_ol, g_ol)
+gs = ClosedLoopTransferFunction(gc * gu, g_ol)
 # output
 closed-loop transfer function.
       top
     -------
     1 + g_ol
 
-  top = 
-       4.0*s + 2.0
--------------------------- e^(-0.6*s)
-8.0*s^3 + 10.0*s^2 + 2.0*s
+  top =
+  4.0*s + 2.0
+--------------- e^(-0.5*s)
+8.0*s^2 + 2.0*s
 
-  g_ol = 
+  g_ol =
        4.0*s + 2.0
 -------------------------- e^(-0.6*s)
 8.0*s^3 + 10.0*s^2 + 2.0*s
