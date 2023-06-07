@@ -107,7 +107,7 @@ function nyquist_diagram(tf::TransferFunction; nb_pts::Int=500, ω_max::Float64=
 end
 
 """
-    root_locus(g_ol, max_mag_Kc=10.0, nb_pts=500, savename=nothing)
+    root_locus(g_ol, max_mag_Kc=10.0, nb_pts=500, savename=nothing, legend_pos=:rt)
 
 visualize the root locus plot of an open-loop transfer function `g_ol`.
 
@@ -116,12 +116,13 @@ visualize the root locus plot of an open-loop transfer function `g_ol`.
 * `max_mag_Kc::Float64=10.0`: the maximum magnitude by which the gain of `g_ol` is 
     scaled in order to see the roots traversing the plane
 * `nb_pts::Int=500`: the number of gains to explore. increase for higher resolution.
+* `legend_pos::Symbol`: Makie command for where to place legend
 
 # returns
 a `CairoMakie.jl` `Figure` object for further modification.
 """
 function root_locus(g_ol::TransferFunction;
-        max_mag_Kc::Float64=10.0, nb_pts::Int=500, savename::Union{Nothing, String}=nothing)
+        max_mag_Kc::Float64=10.0, nb_pts::Int=500, savename::Union{Nothing, String}=nothing, legend_pos::Symbol=:rt)
     # compute zeros, poles, and gain of open loop transfer function
     z, p, k = zeros_poles_k(g_ol)
 
@@ -160,7 +161,7 @@ function root_locus(g_ol::TransferFunction;
     end
 
     fig = Figure()
-	ax  = Axis(fig[1, 1], xlabel="Re", ylabel="Im", title="root locus")
+    ax  = Axis(fig[1, 1], xlabel="Re[Gₒₗ(iω)]", ylabel="Im[Gₒₗ(iω)]", title="root locus", aspect=DataAspect())
     draw_axes(ax)
     # plot poles; corresponds to Kc = 0
     scatter!(real.(p), imag.(p), marker=:x, label="poles", markersize=15, color="black")
@@ -172,7 +173,7 @@ function root_locus(g_ol::TransferFunction;
     for i = 1:length(p)
         lines!(real.(rloc[:, i]), imag.(rloc[:, i]))
     end
-    axislegend()
+    axislegend(position=legend_pos)
     if ! isnothing(savename)
         save(savename, fig, px_per_unit=1)
     end
