@@ -161,7 +161,7 @@ function root_locus(g_ol::TransferFunction;
     end
 
     fig = Figure()
-    ax  = Axis(fig[1, 1], xlabel="Re[Gₒₗ(iω)]", ylabel="Im[Gₒₗ(iω)]", title="root locus", aspect=DataAspect())
+    ax  = Axis(fig[1, 1], xlabel="Re", ylabel="Im", title="root locus", aspect=DataAspect())
     draw_axes(ax)
     # plot poles; corresponds to Kc = 0
     scatter!(real.(p), imag.(p), marker=:x, label="poles", markersize=15, color="black")
