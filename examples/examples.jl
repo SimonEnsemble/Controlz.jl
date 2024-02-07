@@ -1,14 +1,15 @@
 ### A Pluto.jl notebook ###
-# v0.19.0
+# v0.19.38
 
 using Markdown
 using InteractiveUtils
 
 # ╔═╡ 4952d2aa-6b42-11ec-15ea-ed5764c1810b
-import Pkg; Pkg.activate()
-
-# ╔═╡ 5da3e954-e940-45a7-b355-45e78b5ce38b
-using Controlz, DataFrames, CairoMakie, ColorSchemes, Printf
+begin
+	import Pkg; Pkg.activate()
+	using Revise
+	using Controlz, DataFrames, CairoMakie, ColorSchemes, Printf
+end
 
 # ╔═╡ ecab99c5-d929-4a0a-9f81-89ae382aaf45
 set_theme!(cool_theme)
@@ -83,7 +84,7 @@ function invert_lt()
 	U = (s^2 - a^2) / (s^2 + a^2) ^ 2
 	data = simulate(U, 8.0, nb_time_points=300)
 
-	fig = viz_response(data, title="inverting an input U(s)", ylabel="u(t)",
+	fig = viz_response(data, title="inverting an input U*(s)", ylabel="u*(t)",
 	                   savename="../docs/src/tcosat.png")
 	return fig
 end
@@ -184,11 +185,11 @@ function sim_servo_response()
 	u_Iaction_data = simulate(U_Iaction, final_time)
 	
 	fig = Figure(resolution=(800, 600))
-	axs = [Axis(fig[1, 1], ylabel="system output y(t)"),
-		   Axis(fig[2, 1], xlabel="time, t", ylabel="controller output u(t)")
+	axs = [Axis(fig[1, 1], ylabel="system output y*(t)"),
+		   Axis(fig[2, 1], xlabel="time, t", ylabel="controller output u*(t)")
 	]
 	
-	lines!(axs[1], y_data[:, :t], y_data[:, :output], label="response y(t)")
+	lines!(axs[1], y_data[:, :t], y_data[:, :output], label="response y*(t)")
 	lines!(axs[1], ysp_data[:, :t], ysp_data[:, :output], linestyle=:dash, label="set point yₛₚ(t)")
 	axislegend(axs[1], position=:rb)
 	
@@ -270,9 +271,15 @@ end
 # ╔═╡ 8acaad0e-951d-4bc9-add8-19315bb9f4e6
 test_make_gif()
 
+# ╔═╡ ed90dd6e-61cf-4736-a9c4-b8ed9702e7bb
+begin
+	local fig = Figure()
+	local ax = Axis(fig[1, 1], xlabel="hi cory, y*(t)", xlabelfont="Space Mono")
+	fig
+end
+
 # ╔═╡ Cell order:
 # ╠═4952d2aa-6b42-11ec-15ea-ed5764c1810b
-# ╠═5da3e954-e940-45a7-b355-45e78b5ce38b
 # ╠═ecab99c5-d929-4a0a-9f81-89ae382aaf45
 # ╟─2136ca01-87b4-47e9-93b1-25892896413b
 # ╠═e664515e-d86b-4a91-9d47-2d77ad19d06a
@@ -306,3 +313,4 @@ test_make_gif()
 # ╟─2de0d044-1bf6-489f-9e54-026100fd7655
 # ╠═b6a45495-e081-4e02-8a0e-cfe1d3df36ba
 # ╠═8acaad0e-951d-4bc9-add8-19315bb9f4e6
+# ╠═ed90dd6e-61cf-4736-a9c4-b8ed9702e7bb
