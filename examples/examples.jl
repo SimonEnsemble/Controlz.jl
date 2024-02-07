@@ -271,13 +271,6 @@ end
 # ╔═╡ 8acaad0e-951d-4bc9-add8-19315bb9f4e6
 test_make_gif()
 
-# ╔═╡ ed90dd6e-61cf-4736-a9c4-b8ed9702e7bb
-begin
-	local fig = Figure()
-	local ax = Axis(fig[1, 1], xlabel="hi cory, y*(t)", xlabelfont="Space Mono")
-	fig
-end
-
 # ╔═╡ Cell order:
 # ╠═4952d2aa-6b42-11ec-15ea-ed5764c1810b
 # ╠═ecab99c5-d929-4a0a-9f81-89ae382aaf45
@@ -313,4 +306,3 @@ end
 # ╟─2de0d044-1bf6-489f-9e54-026100fd7655
 # ╠═b6a45495-e081-4e02-8a0e-cfe1d3df36ba
 # ╠═8acaad0e-951d-4bc9-add8-19315bb9f4e6
-# ╠═ed90dd6e-61cf-4736-a9c4-b8ed9702e7bb
