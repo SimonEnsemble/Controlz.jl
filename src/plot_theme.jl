@@ -1,12 +1,13 @@
 cool_theme = Theme(
-    palette = (color=[c for c in ColorSchemes.seaborn_muted6], marker=[:circle, :utriangle, :cross, :rect, :diamond, :dtriangle, :pentagon, :xcross]),
-    textcolor = :gray40,
+    palette = (color=[c for c in ColorSchemes.Accent_6], marker=[:circle, :utriangle, :cross, :rect, :diamond, :dtriangle, :pentagon, :xcross]),
+    textcolor = :black,
     linewidth=4,
     fontsize=20,
-    font="open-sans",
-    resolution = (520, 400),
+    font="Space Mono",
+    labelfont="Space Mono",
+    size=(520, 400),
     Axis = (
-        backgroundcolor = RGB(1.0, 1.0, 1.0),
+        backgroundcolor = RGB(0.96, 1.0, 0.98),
         xgridcolor = (:black, 0.15),
         ygridcolor = (:black, 0.15),
         xminorgridcolor = (:gray, 0.15),

@@ -6,7 +6,7 @@ end
 @doc raw"""
     viz_response(data, 
                  title="", xlabel="time, t", 
-                 ylabel="output, y(t)",
+                 ylabel="output, y*(t)",
                  savename=nothing)
 
 plot `data[:, :output]` vs. `data[:, :t]` to visualize the response of a system to an input. 
@@ -43,7 +43,7 @@ fig = viz_response(data)
 function viz_response(data::DataFrame;
                       title::String="",
                       xlabel::String="time, t",
-                      ylabel::String="output, y(t)",
+                      ylabel::String="output, y*(t)",
                       savename::Union{Nothing, String}=nothing
     )
 
@@ -94,7 +94,12 @@ function nyquist_diagram(tf::TransferFunction; nb_pts::Int=500, ω_max::Float64=
     g_iω_pos = [evaluate(tf, ω_i * im) for ω_i in ω_pos]
 
     fig = Figure()
-	ax  = Axis(fig[1, 1], xlabel="Re[G(iω)]", ylabel="Im[G(iω)]", title="Nyquist diagram")
+    ax  = Axis(
+               fig[1, 1], 
+               xlabel=rich("Re[G", subscript("OL"), "(iω)]"), 
+               ylabel=rich("Im[G", subscript("OL"), "(iω)]"), 
+               title="Nyquist diagram"
+              )
     draw_axes(ax)
     lines!(real(g_iω_neg), imag(g_iω_neg))
     lines!(real(g_iω_pos), imag(g_iω_pos))
@@ -208,11 +213,11 @@ function bode_plot(g::TransferFunction; log10_ω_min::Float64=-3.0, log10_ω_max
         end
     end
     
-    fig = Figure(resolution=(800, 600))
+    fig = Figure(size=(800, 600))
     axs = [Axis(fig[1, 1], xscale=log10, yscale=log10,
-		        ylabel="|g(iω)|", title="Bode plot"),
+                ylabel=rich("|G", subscript("OL"), "(iω)|"), title="Bode plot"),
            Axis(fig[2, 1], xscale=log10,
-			    xlabel="ω", ylabel="∠g(iω)")
+                xlabel="ω", ylabel=rich("∠G", subscript("OL"), "(iω)"))
 			]
     linkxaxes!(axs...)
 	for ax in axs # to make plot easy to read
