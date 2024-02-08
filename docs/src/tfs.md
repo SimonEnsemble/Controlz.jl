@@ -53,13 +53,13 @@ as rational functions associated with a time delay, each `TransferFunction` data
 ```jldoctest gdef
 g.numerator
 # output
-Polynomials.Polynomial(1.0 + 5.0*s)
+Polynomial(1.0 + 5.0*s)
 ```
 
 ```jldoctest gdef
 g.denominator
 # output
-Polynomials.Polynomial(5.0 + 4.0*s + 1.0*s^2)
+Polynomial(5.0 + 4.0*s + 1.0*s^2)
 ```
 
 ```jldoctest gdef
@@ -240,7 +240,7 @@ margins.ω_g          # gain crossover freq. (radians / time)
 margins.gain_margin  # gain margin
 margins.phase_margin # phase margin (radians)
 # output
-1.7479849408794201
+1.74798494087942
 ```
 
 
