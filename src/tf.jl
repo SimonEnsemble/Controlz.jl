@@ -253,9 +253,6 @@ evaluate(tf, 1.0)
 # output
 0.25
 ```
-
-```jldoctest eval
-```
 """
 function evaluate(tf::TransferFunction, z::Number)
     return tf.numerator(z) / tf.denominator(z) * exp(-tf.time_delay * z)

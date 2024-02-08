@@ -1,5 +1,6 @@
 using Documenter
 using Controlz
+using Polynomials
 
 # using Controlz before all docstrings
 DocMeta.setdocmeta!(Controlz, :DocTestSetup, :(using Controlz); recursive=true)
@@ -9,6 +10,7 @@ makedocs(
     modules = [Controlz],
  #     source = "src",
     doctest = true,
+    warnonly = true,
     sitename = "Controlz.jl",
     clean = true,
     pages = ["Controlz" => "index.md",
