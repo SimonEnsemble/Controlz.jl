@@ -6,7 +6,7 @@ we build upon `simulate` to simulate feedback and feedforward control systems.
 
 we express PID controller transfer functions in the form:
 
-$$g_c(s)=K_c \left[1+\frac{1}{\tau_I}+\tau_D s \frac{1}{\tau_D \alpha s + 1}\right]$$
+$$g_c(s)=K_c \left[1+\frac{1}{\tau_I s}+\tau_D s \frac{1}{\tau_D \alpha s + 1}\right]$$
 
 where $\alpha$ characterizes the derivative filter. this controller function function governs the controller output in response to the input error signal.
 
