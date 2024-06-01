@@ -64,7 +64,12 @@ plot the zeros and poles of the transfer function `g` in the complex plane.
 
 returns a `CairoMakie.jl` `Figure` object for further modification.
 """
-function viz_poles_and_zeros(tf::TransferFunction; savename::Union{Nothing, String}=nothing, title::String="poles and zeros")
+function viz_poles_and_zeros(
+        tf::TransferFunction; 
+        savename::Union{Nothing, String}=nothing, 
+        title::String="poles and zeros",
+        legend_position::Symbol=:rc
+)
     z, p, k = zeros_poles_gain(tf)
     
     fig = Figure()
@@ -72,7 +77,7 @@ function viz_poles_and_zeros(tf::TransferFunction; savename::Union{Nothing, Stri
     draw_axes(ax)
     scatter!(real.(z), imag.(z), marker=:circle, label="zeros", markersize=15)
     scatter!(real.(p), imag.(p), marker=:x, label="poles", markersize=15)
-    axislegend()
+    axislegend(position=legend_position)
     if ! isnothing(savename)
         save(savename, fig, px_per_unit=1)
     end
