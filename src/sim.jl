@@ -50,7 +50,7 @@ end
 
 
 @doc raw"""
-    data = simulate(Y, final_time, nb_time_points=100) # invert Y(s)
+    data = simulate(Y, final_time, nb_time_points=250) # invert Y(s)
 
 simulate the output $y(t)$ of an LTI system, given the Laplace transform of the output, $Y(s)$, `Y`.
 
@@ -89,7 +89,7 @@ first(data, 5)           # show the first 5 rows of the data frame
    5 │  0.247432  0.316671
 ```
 """
-function simulate(Y::TransferFunction, final_time::Union{Float64, Int64}; nb_time_points::Int=100)
+function simulate(Y::TransferFunction, final_time::Union{Float64, Int64}; nb_time_points::Int=250)
     if ! proper(Y)
         error("LTI system is not proper...")
     end
@@ -105,7 +105,7 @@ function simulate(Y::TransferFunction, final_time::Union{Float64, Int64}; nb_tim
 
     f(x, p, t) = A * x # RHS of ODE (ignore p for params)
     prob = ODEProblem(f, x0, (0.0, 1.0 * final_time))
-    sol = solve(prob, d_discontinuities=[0.0])
+    sol = solve(prob, Tsit5(), d_discontinuities=[0.0], saveat=final_time / nb_time_points, reltol=1e-8, abstol=1e-8)
 
     t = vcat([-0.05 * final_time, -1e-5], range(1e-5, final_time, length=nb_time_points - 2))
     y = [NaN for i = 1:nb_time_points]
