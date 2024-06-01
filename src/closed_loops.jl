@@ -130,7 +130,7 @@ function tf_to_ss(cl::CLTFStandard)
 end
 
 # see sim.jl for doc string
-function simulate(cl::ClosedLoopTransferFunction, final_time::Float64; nb_time_points::Int=100)
+function simulate(cl::ClosedLoopTransferFunction, final_time::Float64; nb_time_points::Int=250)
 	cls = CLTFStandard(cl)
 	
     if ! strictly_proper(cls)
@@ -145,7 +145,7 @@ function simulate(cl::ClosedLoopTransferFunction, final_time::Float64; nb_time_p
 	h(p, t) = zeros(order(cls))
     f(x, h, p, t) = A * x - C * h(p, t - cls.ϕ) # RHS of ODE (ignore p for params)
     prob = DDEProblem(f, x0, h, (0.0, final_time))
-    sol = solve(prob, d_discontinuities=[0.0, cls.ϕ, cls.θ, cls.θ + cls.ϕ])
+    sol = solve(prob, d_discontinuities=[0.0, cls.ϕ, cls.θ, cls.θ + cls.ϕ], abstol=1e-8, reltol=1e-8)
 
 	t = vcat([-0.05 * final_time, -1e-5], 
 	range(1e-5, final_time, length=nb_time_points - 2))

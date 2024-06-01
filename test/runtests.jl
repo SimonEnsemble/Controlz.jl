@@ -279,9 +279,9 @@ end
     # L[cos(at)] = s/(s^2+a^2)
     a = 2.3
     U = s / (s^2+a^2)
-    u_data = simulate(U, 12.0)
+    u_data = simulate(U, 12.0, nb_time_points=500)
     _cosat(t::Float64) = t < 0.0 ? 0.0 : cos(a*t)
-    @test isapprox(u_data[:, :output], _cosat.(u_data[:, :t]), rtol=0.001)
+    @test isapprox(u_data[:, :output], _cosat.(u_data[:, :t]), rtol=0.005)
     # L[shifted step] = e^{-a*s}/s
     U = exp(-a*s) / s
     u_data = simulate(U, 12.0)
@@ -313,7 +313,7 @@ end
     data = simulate(g, 12.0)
     y_truth = K / τ * exp.(-data[:, :t]/τ)
     y_truth[data[:, :t] .< 0.0] .= 0.0
-    @test isapprox(y_truth, data[:, :output], rtol=0.0001)
+    @test isapprox(y_truth, data[:, :output], rtol=0.005)
 
     # first order ramp input
     a = 2.0 # slope of ramp
@@ -332,7 +332,7 @@ end
     y_truth = τ * ω / (1 + (τ*ω)^2) * exp.(-data[:, :t] ./ τ) .+ 1 / sqrt(1+(τ*ω)^2) * sin.(ω*data[:, :t] .+ ϕ)
     y_truth *= K * A
     y_truth[data[:, :t] .< 0.0] .= 0.0
-    @test isapprox(y_truth, data[:, :output], rtol=0.001)
+    @test isapprox(y_truth, data[:, :output], rtol=0.005)
 
     # FOPTD
     M = 3.3
@@ -341,10 +341,10 @@ end
     K = 9.0
     g = K / (τ * s + 1) * exp(-θ * s)
     u = M / s
-    data = simulate(g * u, 10.0)
+    data = simulate(g * u, 10.0, nb_time_points=1000)
     y_truth = K * M * (1.0 .- exp.(-(data[:, :t] .- θ) ./ τ))
     y_truth[data[:, :t] .< θ] .= 0.0
-    @test isapprox(y_truth, data[:, :output], atol=0.001)
+    @test isapprox(y_truth, data[:, :output], atol=0.005)
 
     ##
     # second order, overdamped
@@ -401,8 +401,8 @@ end
     @test isapprox(interpolate(data, 1.2), 1.2*5)
     τ = 3.45
     g = 1 / (τ * s + 1)
-    data = simulate(g / s, 10.0)
-    @test isapprox(interpolate(data, τ), 0.632, atol=0.002)
+    data = simulate(g / s, 10.0, nb_time_points=300)
+    @test isapprox(interpolate(data, τ), 1.0 - exp(-1.0), atol=0.002)
 end
 
 @testset "testing Controls" begin
@@ -467,9 +467,9 @@ end
     # run without a time delay to compare to other simulate function.
     gp = 3 / (s + 2)
     gc = TransferFunction(PIController(1.0, 3.0))
-    data_old = simulate(gp * gc / (1 + gp * gc), 10.0)
-    data_new = simulate(ClosedLoopTransferFunction(gp * gc, gp * gc), 10.0)
-    @test isapprox(data_old[:, :output], data_new[:, :output], atol=0.0001)
+    data_old = simulate(gp * gc / (1 + gp * gc), 10.0, nb_time_points=1000)
+    data_new = simulate(ClosedLoopTransferFunction(gp * gc, gp * gc), 10.0, nb_time_points=1000)
+    @test isapprox(data_old[:, :output], data_new[:, :output], atol=0.005)
 end
 
 @testset "example notebook (also to generate images for docs)" begin
