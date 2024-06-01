@@ -17,7 +17,7 @@ viz_poles_and_zeros(g)
 g = 4 / (4 * s ^ 2 + 0.8 * s + 1)
 U = 1 / s
 Y = g * U
-data = simulate(Y, (0.0, 50.0))
+data = simulate(Y, 50.0)
 viz_response(data, title="SO underdamped step response")
 ```
 
