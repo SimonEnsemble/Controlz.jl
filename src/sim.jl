@@ -155,5 +155,5 @@ function interpolate(data::DataFrame, t̃::Float64)
     sort!(data, :t)
     # from Interpolations.jl.
     #   will throw error if t not sorted. 
-    return LinearInterpolation(data[:, :t], data[:, :output])(t̃)
+    return linear_interpolation(data[:, :t], data[:, :output])(t̃)
 end

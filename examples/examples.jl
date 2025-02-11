@@ -184,7 +184,7 @@ function sim_servo_response()
 	u_Paction_data = simulate(U_Paction, final_time)
 	u_Iaction_data = simulate(U_Iaction, final_time)
 	
-	fig = Figure(resolution=(800, 600))
+	fig = Figure(figsize=(800, 600))
 	axs = [Axis(fig[1, 1], ylabel="system output y*(t)"),
 		   Axis(fig[2, 1], xlabel="time, t", ylabel="controller output u*(t)")
 	]
